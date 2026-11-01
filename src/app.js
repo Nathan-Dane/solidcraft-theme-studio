@@ -16,14 +16,16 @@ const store = createStore(starter);
 const editor = new Editor($('#editor'), store, notify);
 const gpuMode = new URLSearchParams(location.search).has('gpu');
 const htmlPreview = new HtmlPreview($('#preview-stage'));
+// Controls inside the preview (the Preferences page) edit the same try-it values as the options panel.
+htmlPreview.onOption = (id, value) => store.setPreview(id, value);
 $('#preview-stage').classList.toggle('gpu', gpuMode);
 $('#preview-stage').dataset.view = new URLSearchParams(location.search).get('view') || 'diff';
 let ready = false, previewReady = false, rendererPresented = false, schema = null, evaluation = null, pendingEvaluation = 0, evaluationTimer;
 let expectedNativePreview = null;
 let rendererInfo = null;
 let previewLanguage = 'en-GB';
-const categoryScene = { interface: 'app', workspaces: 'app', viewport: 'sketch', text: 'icons' };
-const sceneNames = { app: 'Full app', sketch: 'Sketch', icons: 'Icons' };
+const categoryScene = { interface: 'app', workspaces: 'app', viewport: 'sketch', text: 'icons', options: 'appearance' };
+const sceneNames = { app: 'Full app', sketch: 'Sketch', appearance: 'Appearance', icons: 'Icons' };
 const recovered = store.recover();
 if (recovered) notify('Your last theme draft is back on the workbench.');
 
@@ -331,7 +333,7 @@ async function startRuntime(withPreview = true) {
       }));
       previewLanguage = schema.defaultLanguage || 'en-GB'; $('#language-select').value = previewLanguage; $('#language-select').disabled = !previewReady;
     }
-    document.querySelector('[data-scene=app]').hidden = false; document.querySelector('[data-scene=sketch]').hidden = false;
+    document.querySelector('[data-scene=app]').hidden = false; document.querySelector('[data-scene=sketch]').hidden = false; document.querySelector('[data-scene=appearance]').hidden = false;
     $('#scene-select').value = 'app'; htmlPreview.setScene('app');
     if (gpuMode && typeof engine.setView === 'function') await bridge.call('setView', JSON.stringify({ scene: 'app' }));
     editor.setRuntime(schema, evaluation); editor.show();

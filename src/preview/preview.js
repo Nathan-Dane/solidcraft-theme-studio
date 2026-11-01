@@ -5,6 +5,7 @@ import { Tokens } from './tokens.js';
 import { Icons, loadIcons } from './icons.js';
 import { Kit } from './kit.js';
 import { appScene } from './app-scene.js';
+import { appearanceScene } from './appearance-scene.js';
 import { scenes } from './scenes.js';
 
 const hex = value => value;
@@ -22,7 +23,7 @@ export class HtmlPreview {
     this.kit = new Kit(this.tokens, this.icons);
     window.__preview = this;
     this.scene = 'app';
-    this.state = { tab: 'MODEL', bodiesOpen: true, history: 8, dialog: { dx: 0, dy: 0 }, pan: { x: 0, y: 0 }, form: { direction: 'One Side', extent: 'Distance', operation: 'Join' } };
+    this.state = { tab: 'MODEL', bodiesOpen: true, history: 8, prefs: { themeOffset: 0, background: 'gradient', bg: '#ffffff', view3d: 'own', logo: 'theme' }, dialog: { dx: 0, dy: 0 }, pan: { x: 0, y: 0 }, form: { direction: 'One Side', extent: 'Distance', operation: 'Join' } };
     this.inspect = false; this.locked = null;
     this.root = el('div', { class: 'pv-root', tabindex: '0', 'aria-label': 'SolidCraft interface preview' });
     stage.prepend(this.root);
@@ -35,14 +36,16 @@ export class HtmlPreview {
     this.root.addEventListener('pointermove', event => this.hover(event));
     this.root.addEventListener('pointerleave', () => this.hover(null));
     this.root.addEventListener('click', event => this.click(event));
-    this.root.addEventListener('pointerdown', event => { if (!this.startPan(event)) this.startDrag(event); });
+    this.root.addEventListener('pointerdown', event => { if (!this.startRange(event) && !this.startPan(event)) this.startDrag(event); });
   }
 
   /** Development comparison against a screenshot of the real window: ?ref&view=diff|ref|html&crop=x,y,w,h */
   get dev() {
     const params = new URLSearchParams(location.search);
-    const sketch = this.scene === 'sketch';
-    return params.has('ref') ? { ref: sketch ? { src: new URL('../../mockups/real-sketch.png', import.meta.url).href, w: 1287, h: 859, x: 8, y: 0 } : { src: new URL('../../mockups/real-app.webp', import.meta.url).href, w: 1291, h: 858 }, view: params.get('view') || 'diff', crop: params.get('crop')?.split(',').map(Number) } : null;
+    const sketch = this.scene === 'sketch', appearance = this.scene === 'appearance';
+    const sketchRef = { src: new URL('../../mockups/real-sketch.png', import.meta.url).href, w: 1287, h: 859, x: 8, y: 0 };
+    const appearanceRef = { src: new URL('../../mockups/real-appearance.webp', import.meta.url).href, w: 1458, h: 1009 };
+    return params.has('ref') ? { ref: sketch ? sketchRef : appearance ? appearanceRef : { src: new URL('../../mockups/real-app.webp', import.meta.url).href, w: 1291, h: 858 }, view: params.get('view') || 'diff', crop: params.get('crop')?.split(',').map(Number) } : null;
   }
 
   async init(contract) { await loadIcons(contract.iconIndex); this.iconsReady = true; this.render(); }
@@ -51,9 +54,10 @@ export class HtmlPreview {
   update(result, state) {
     const changed = this.tokens.update(result);
     this.state.tab = state.workspace;
+    this.state.themeName = state.document?.name;
     this.state.options = result?.definitions || result?.theme_option_defs || result?.theme?.options || [];
     this.state.optionValues = { ...(result?.effectiveValues || result?.effective_values || result?.theme_option_values || {}), ...(state.preview || {}) };
-    if (changed || this.dirtyTab !== state.workspace) { this.dirtyTab = state.workspace; this.render(); }
+    if (changed || this.dirtyTab !== state.workspace || this.scene === 'appearance') { this.dirtyTab = state.workspace; this.render(); }
     return changed;
   }
 
@@ -65,6 +69,7 @@ export class HtmlPreview {
     if (!this.tokens.ready || !this.iconsReady) return;
     const t = this.tokens;
     for (const [name, value] of Object.entries(t.cssVariables())) this.root.style.setProperty(name, value);
+    if (this.holding) return;
     const border = t.primaryBorder(t.c('border'));
     this.root.style.setProperty('--shadow', withAlpha(t.c('app_bar'), 0.18));
     this.root.style.setProperty('--border-color', border.color);
@@ -74,7 +79,8 @@ export class HtmlPreview {
     this.root.style.setProperty('--inset-color', inset?.color ?? 'transparent');
     this.root.style.setProperty('--border-color-dialog', t.borders.primary?.color ?? t.c('dialog_border'));
     this.root.classList.toggle('dark', t.dark);
-    const build = this.scene === 'app' || this.scene === 'sketch' ? (kit, stage, state) => appScene(kit, stage, state, this.dev, this.scene) : scenes[this.scene];
+    const build = this.scene === 'app' || this.scene === 'sketch' ? (kit, stage, state) => appScene(kit, stage, state, this.dev, this.scene)
+      : this.scene === 'appearance' ? (kit, stage, state) => appearanceScene(kit, stage, state, this.dev) : scenes[this.scene];
     this.root.replaceChildren(build(this.kit, this.size, this.state, this.scene));
     this.root.dataset.scene = this.scene;
     if (this.dev) this.root.dataset.refview = this.dev.view; else delete this.root.dataset.refview;
@@ -143,7 +149,48 @@ export class HtmlPreview {
     if (hit) window.dispatchEvent(new CustomEvent('solidcraft-theme-studio-inspect', { detail: hit }));
   }
 
+  /** A theme option changed in the Preferences page: remember it here and hand it to the studio. */
+  setOption(id, value) {
+    this.state.optionValues = { ...this.state.optionValues, [id]: value };
+    this.onOption?.(id, value);
+  }
+
+  /** Drag a range in the Preferences page. The page is left alone while dragging and rebuilt on release. */
+  startRange(event) {
+    const rng = event.target.closest?.('.pv-rng');
+    if (!rng || rng.classList.contains('off') || this.inspect || event.button !== 0) return false;
+    const { opt, unit } = rng.dataset, min = Number(rng.dataset.min), max = Number(rng.dataset.max), step = Number(rng.dataset.step) || 1;
+    const fill = rng.querySelector('.pv-rfill'), thumb = rng.querySelector('.pv-rthumb'), readout = this.root.querySelector(`[data-value-for="${opt}"]`);
+    const set = e => {
+      const box = rng.getBoundingClientRect(), f = Math.min(1, Math.max(0, (e.clientX - box.left) / box.width));
+      const value = Math.min(max, Math.max(min, Math.round((min + f * (max - min)) / step) * step));
+      const g = (value - min) / (max - min || 1), width = rng.offsetWidth;
+      fill.style.width = `${g * width}px`; thumb.style.left = `${g * width - 10}px`;
+      if (readout) readout.textContent = `${value}${unit}`;
+      if (value !== this.state.optionValues?.[opt]) this.setOption(opt, value);
+    };
+    this.holding = true;
+    rng.setPointerCapture(event.pointerId);
+    set(event);
+    const end = () => { rng.removeEventListener('pointermove', set); rng.removeEventListener('pointerup', end); rng.removeEventListener('pointercancel', end); this.holding = false; this.render(); };
+    rng.addEventListener('pointermove', set); rng.addEventListener('pointerup', end); rng.addEventListener('pointercancel', end);
+    event.preventDefault();
+    return true;
+  }
+
+  /** Click targets in the Preferences page: theme options, local preferences, the theme carousel and defaults. */
+  press(data) {
+    const prefs = this.state.prefs;
+    if (data.act === 'opt') this.setOption(data.opt, JSON.parse(data.val));
+    else if (data.act === 'pref') prefs[data.key] = data.val;
+    else if (data.act === 'themes') prefs.themeOffset = Math.max(0, prefs.themeOffset + Number(data.dir));
+    else if (data.act === 'defaults') { for (const def of this.state.options || []) this.setOption(def.id, def.default); Object.assign(prefs, { background: 'gradient', view3d: 'own', logo: 'theme' }); }
+    this.render();
+  }
+
   click(event) {
+    const control = !this.inspect && event.target.closest?.('.pv-act');
+    if (control) { this.press(control.dataset); return; }
     const cell = !this.inspect && event.target.closest?.('.pv-icell');
     if (cell) { this.state.iconSelected = cell.dataset.icon; const top = this.root.scrollTop; this.render(); this.root.scrollTop = top; return; }
     if (!this.inspect) return;

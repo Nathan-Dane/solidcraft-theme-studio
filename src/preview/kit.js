@@ -91,7 +91,7 @@ export class Kit {
     [822, 861, 900].forEach((x, i) => bar.append(this.iconAt(['bug_report', 'settings', 'help'][i], 20, x + rx, cy, { ink })));
     const bug = abs('pv-bug', rect(922 + rx, 4, 146, 28));
     bug.append(this.iconAt('bug_report', 16, 15, 14, { ink }), textAt('Report a bug', 32, 14, 'bar pv-fs14'));
-    bar.append(bug, textAt('v0.28.0', 1078 + rx, cy, 'dim pv-fs14'));
+    bar.append(bug, textAt('v0.29.0', 1078 + rx, cy, 'dim pv-fs14'));
     const caption = (kind, cx) => svg(14, 14, { min: '<path d="M2 7h10"/>', max: '<rect x="2" y="2" width="10" height="10"/>', close: '<path d="M2 2l10 10M12 2L2 12"/>' }[kind], `left:${px(cx - 7)};top:${px(cy - 7)};fill:none;stroke:${ink};stroke-width:1`);
     bar.append(caption('min', r.w - 114), caption('max', r.w - 76), caption('close', r.w - 24));
     return bar;

@@ -53,9 +53,10 @@
         <div class="scene-tabs" role="group" aria-label="Preview scene">
           <button type="button" data-scene="app" aria-pressed="false" title="The whole application: ribbon, browser, inspector and history over a part" hidden>Full app</button>
           <button type="button" data-scene="sketch" aria-pressed="false" title="Sketch mode: the sketch plane face-on with grid, profile, dimensions and snaps" hidden>Sketch</button>
+          <button type="button" data-scene="appearance" aria-pressed="false" title="Preferences, Appearance page: the theme's own options as the application shows them. Every control changes the option values." hidden>Appearance</button>
           <button type="button" data-scene="icons" aria-pressed="false" title="Every icon in the library, recoloured by the theme">Icons</button>
         </div>
-        <select id="scene-select" aria-label="Preview scene" disabled hidden><option value="app">Full app</option><option value="sketch">Sketch</option><option value="icons">Icons</option></select>
+        <select id="scene-select" aria-label="Preview scene" disabled hidden><option value="app">Full app</option><option value="sketch">Sketch</option><option value="appearance">Appearance</option><option value="icons">Icons</option></select>
         <div class="preview-tools"><button id="inspect-button" class="button compact" aria-pressed="false" title="Inspect the theme roles behind a preview element" disabled>Inspect</button><button id="compare-button" class="button compact" aria-pressed="false" disabled>Pin comparison</button><button id="stage-focus" class="icon-button" type="button" aria-pressed="false" aria-label="Expand preview" title="Expand preview (hide editor)"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M3 8V3h5M12 3h5v5M17 12v5h-5M8 17H3v-5"/></svg></button></div>
       </div>
       <div class="preview-context">

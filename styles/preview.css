@@ -177,3 +177,28 @@
 .pv-dot-mark{position:absolute;border-radius:50%;background:var(--c-sketch-accent)}
 .pv-ref{transform-origin:0 0}
 .pv-box.on::after{content:"";position:absolute;left:4.5px;top:1.5px;width:4px;height:8px;border:solid var(--c-on-accent,#111);border-width:0 2px 2px 0;transform:rotate(40deg)}
+
+/* ---- Preferences, Appearance page ---- */
+.pv-act{cursor:pointer}
+.pv-prefs{overflow:hidden}
+.pv-pnav,.pv-ppage{position:absolute}
+.pv-ppage{overflow-y:auto;overflow-x:hidden;scrollbar-width:thin;scrollbar-color:var(--c-dialog-rule) transparent}
+.pv-ppage-in{position:relative;width:100%}
+.pv-nav-row{position:absolute;border-radius:6px}.pv-nav-row:hover{background:var(--c-hover)}.pv-nav-row.on{background:var(--c-tab-soft)}
+.pv-profile{position:absolute;box-sizing:border-box;border:1px solid var(--c-dialog-border);border-radius:8px;background:var(--c-control-fill)}
+.pv-pill{position:absolute;box-sizing:border-box;border:1px solid var(--c-dialog-border);border-radius:12px}
+.pv-prefcard{border:1px solid var(--c-dialog-border);border-radius:8px;box-sizing:border-box}
+.pv-theme{position:absolute;box-sizing:border-box;border:1px solid var(--c-dialog-border);border-radius:8px;cursor:default;background:color-mix(in srgb,var(--c-control-fill) 55%,transparent)}
+.pv-theme:hover{background:var(--c-hover)}.pv-theme.on{border-color:var(--c-form-primary);box-shadow:0 0 0 1px var(--c-form-primary)}
+.pv-arrow{position:absolute;box-sizing:border-box;border:1px solid var(--c-dialog-border);border-radius:8px;background:color-mix(in srgb,var(--c-control-fill) 55%,transparent)}
+.pv-arrow:hover{background:var(--c-hover)}.pv-arrow.off{opacity:.35;pointer-events:none}
+.pv-rng{position:absolute;cursor:pointer;touch-action:none}.pv-rng.off{opacity:.45;pointer-events:none}
+.pv-rtrack{position:absolute;border-radius:2px;background:var(--c-dialog-rule)}
+.pv-rfill{position:absolute;border-radius:2px;background:var(--c-form-primary)}
+.pv-rthumb{position:absolute;box-sizing:border-box;border-radius:50%;background:var(--c-control-fill);border:2px solid var(--c-form-primary)}
+.pv-toggle.disabled{pointer-events:none}.pv-toggle .pv-knob{background:var(--c-text-dim)}.pv-toggle.on .pv-knob{background:var(--c-on-accent,#fff)}
+.pv-bar-i{position:absolute;border-radius:1px;background:var(--c-dialog-rule)}.pv-bar-i.on{background:var(--c-text)}
+.pv-swatch{position:absolute;box-sizing:border-box;border:1px solid var(--c-control-border);border-radius:6px}.pv-swatch.off,.pv-hex.off{opacity:.55}
+.pv-keycap2{background:transparent;border-radius:5px}
+.pv-prefs .pv-seg .pv-segment .pv-t{color:var(--c-text)}
+.pv-prefcard,.pv-bars,.pv-pnav,.pv-ppage{position:absolute}
