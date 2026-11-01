@@ -144,29 +144,29 @@ export class Kit {
    */
   navCube(r) {
     const t = this.t, rgba = (hex, k) => { const v = hex.replace('#', ''); return `rgba(${parseInt(v.slice(0, 2), 16)},${parseInt(v.slice(2, 4), 16)},${parseInt(v.slice(4, 6), 16)},${((v.length >= 8 ? parseInt(v.slice(6, 8), 16) : 255) / 255) * k})`; };
-    const c = [r.x + r.w / 2, r.y + r.h / 2 - 4], R = 58;
+    const c = [r.x + r.w / 2, r.y + r.h / 2 - 4], R = 57;
     // Tip offsets in the default isometric view, with the artwork scaled to 84% of the axis length.
     const tips = [
-      ['-x', -26, -16, 'axis_x', false], ['-y', -26, 15, 'axis_y', false], ['-z', 0, 31, 'axis_z', false],
-      ['x', 26, 16, 'axis_x', true], ['y', 26, -15, 'axis_y', true], ['z', 0, -31, 'axis_z', true]
+      ['-x', -25.3, -13.3, 'axis_x', false], ['-y', -25.3, 16, 'axis_y', false], ['-z', 0.3, 30.7, 'axis_z', false],
+      ['x', 26.3, 16, 'axis_x', true], ['y', 26.3, -13.5, 'axis_y', true], ['z', 0.3, -29.3, 'axis_z', true]
     ];
-    let m = `<circle cx="${c[0]}" cy="${c[1]}" r="${R}" fill="${rgba(t.c('overlay'), 0.35)}" stroke="${rgba(t.c('border'), 0.75)}" stroke-width="1"/>`;
+    let m = `<circle cx="${c[0]}" cy="${c[1]}" r="${R}" fill="${rgba(t.c('overlay'), 0.35)}" stroke="${rgba(t.c('border'), 0.55)}" stroke-width="1"/>`;
     tips.forEach(([name, dx, dy, key, positive], i) => {
-      if (i === 3) m += `<circle cx="${c[0]}" cy="${c[1]}" r="3.6" fill="${rgba(t.c('text'), 0.9)}" stroke="${t.c('panel')}" stroke-width="1.4"/>`;
+      if (i === 3) m += `<circle cx="${c[0]}" cy="${c[1]}" r="3.4" fill="${rgba(t.c('text'), 0.9)}" stroke="${t.c('panel')}" stroke-width="1.2"/>`;
       const col = t.c(key), ink = positive ? col : rgba(col, 0.55);
-      const at = [c[0] + dx, c[1] + dy], len = Math.hypot(dx, dy), radius = positive ? 11 : 4.8;
-      const end = [at[0] - (dx / len) * (positive ? radius : radius + 1.2), at[1] - (dy / len) * (positive ? radius : radius + 1.2)];
-      m += `<line x1="${c[0]}" y1="${c[1]}" x2="${end[0]}" y2="${end[1]}" stroke="${ink}" stroke-width="3.6"/><circle cx="${c[0]}" cy="${c[1]}" r="1.8" fill="${ink}"/>`;
+      const at = [c[0] + dx, c[1] + dy], len = Math.hypot(dx, dy), radius = positive ? 12.7 : 6.3;
+      const end = [at[0] - (dx / len) * (positive ? radius : radius + 1.4), at[1] - (dy / len) * (positive ? radius : radius + 1.4)];
+      m += `<line x1="${c[0]}" y1="${c[1]}" x2="${end[0]}" y2="${end[1]}" stroke="${ink}" stroke-width="3.4"/><circle cx="${c[0]}" cy="${c[1]}" r="1.7" fill="${ink}"/>`;
       m += positive
-        ? `<circle cx="${at[0]}" cy="${at[1]}" r="11" fill="${col}"/><text x="${at[0]}" y="${at[1]}" text-anchor="middle" dominant-baseline="central" font-family="Plex,system-ui,sans-serif" font-size="${t.m('font_compass')}" font-weight="700" fill="${t.c('on_accent')}">${name.toUpperCase()}</text>`
-        : `<circle cx="${at[0]}" cy="${at[1]}" r="4.8" fill="none" stroke="${ink}" stroke-width="2.4"/>`;
+        ? `<circle cx="${at[0]}" cy="${at[1]}" r="12.7" fill="${col}"/><text x="${at[0]}" y="${at[1]}" text-anchor="middle" dominant-baseline="central" font-family="Plex,system-ui,sans-serif" font-size="12.5" font-weight="700" fill="${t.c('on_accent')}">${name.toUpperCase()}</text>`
+        : `<circle cx="${at[0]}" cy="${at[1]}" r="6.3" fill="none" stroke="${ink}" stroke-width="2.4"/>`;
     });
-    const home = [c[0] - 43, c[1] - 43];
-    m += `<circle cx="${home[0]}" cy="${home[1]}" r="15" fill="${rgba(t.c('overlay'), 0.5)}" stroke="${t.c('border')}" stroke-width="1"/>`;
+    const home = [c[0] - 37.7, c[1] - 41];
+    m += `<circle cx="${home[0]}" cy="${home[1]}" r="11.2" fill="${rgba(t.c('overlay'), 0.5)}" stroke="${t.c('border')}" stroke-width="1"/>`;
     const node = svg(r.w, r.h, '', `left:${px(r.x)};top:${px(r.y)};overflow:visible`);
     node.setAttribute('viewBox', `${r.x} ${r.y} ${r.w} ${r.h}`); node.innerHTML = m;
     const wrap = tag(el('div', { class: 'pv-abs' }), 'Navigation compass', ['overlay', 'border', 'panel', 'text', 'axis_x', 'axis_y', 'axis_z', 'on_accent']);
-    wrap.style.cssText = 'left:0;top:0;width:0;height:0'; wrap.append(node, this.iconAt('home', 20, home[0], home[1], { ink: t.c('icon') }));
+    wrap.style.cssText = 'left:0;top:0;width:0;height:0'; wrap.append(node, this.iconAt('home', 14, home[0], home[1], { ink: t.c('icon') }));
     return wrap;
   }
 
