@@ -11,18 +11,18 @@ Requirements:
 - Node.js 20 or newer; the frontend has no npm dependencies.
 - Python 3 or another local static HTTP server.
 - PowerShell 7 (`pwsh`), Git, Rust/Cargo with the `wasm32-unknown-unknown` target, and Trunk.
-- The runtime source currently requires Rust 1.95 or newer. CI pins Rust 1.95.0 and Trunk 0.22.1.
+- The runtime source requires Rust 1.95 or newer; building Trunk 0.22.1 requires Rust 1.96.1 or newer. CI pins Rust 1.96.1 and Trunk 0.22.1.
 
 Build the reviewed source recorded in `runtime-source.json`:
 
 ```sh
-rustup toolchain install 1.95.0 --profile minimal --target wasm32-unknown-unknown
-cargo +1.95.0 install trunk --version 0.22.1 --locked
+rustup toolchain install 1.96.1 --profile minimal --target wasm32-unknown-unknown
+cargo +1.96.1 install trunk --version 0.22.1 --locked
 pwsh -File scripts/build-runtime.ps1
 python -m http.server 4173 --bind 127.0.0.1
 ```
 
-Open `http://127.0.0.1:4173/`. Serve over HTTP rather than opening `index.html` directly; ES modules and WASM need an origin. On systems with multiple Rust toolchains, set `RUSTUP_TOOLCHAIN=1.95.0` for the runtime build.
+Open `http://127.0.0.1:4173/`. Serve over HTTP rather than opening `index.html` directly; ES modules and WASM need an origin. On systems with multiple Rust toolchains, set `RUSTUP_TOOLCHAIN=1.96.1` for the runtime build.
 
 For local runtime development only, the build helper accepts a reviewed local SolidCraft checkout:
 

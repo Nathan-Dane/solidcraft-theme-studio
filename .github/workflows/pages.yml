@@ -18,7 +18,7 @@ jobs:
     runs-on: ubuntu-24.04
     timeout-minutes: 90
     env:
-      RUSTUP_TOOLCHAIN: 1.95.0
+      RUSTUP_TOOLCHAIN: 1.96.1
     steps:
       - name: Check out site
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -44,19 +44,19 @@ jobs:
             ~/.cargo/registry
             ~/.cargo/git
             ~/.cargo/bin/trunk
-          key: ${{ runner.os }}-cargo-rust1.95.0-trunk0.22.1-${{ steps.runtime-pin.outputs.sha }}
+          key: ${{ runner.os }}-cargo-rust1.96.1-trunk0.22.1-${{ steps.runtime-pin.outputs.sha }}
           restore-keys: |
-            ${{ runner.os }}-cargo-rust1.95.0-trunk0.22.1-
+            ${{ runner.os }}-cargo-rust1.96.1-trunk0.22.1-
       - name: Restore the pinned runtime build
         uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
           path: target/runtime-build-${{ steps.runtime-pin.outputs.sha }}
-          key: ${{ runner.os }}-runtime-rust1.95.0-trunk0.22.1-${{ steps.runtime-pin.outputs.sha }}
+          key: ${{ runner.os }}-runtime-rust1.96.1-trunk0.22.1-${{ steps.runtime-pin.outputs.sha }}
       - name: Install pinned Rust toolchain and Trunk
         run: |
-          rustup toolchain install 1.95.0 --profile minimal --target wasm32-unknown-unknown
+          rustup toolchain install 1.96.1 --profile minimal --target wasm32-unknown-unknown
           if ! command -v trunk >/dev/null || [ "$(trunk --version)" != "trunk 0.22.1" ]; then
-            cargo +1.95.0 install trunk --version 0.22.1 --locked --force
+            cargo +1.96.1 install trunk --version 0.22.1 --locked --force
           fi
       - name: Build reviewed runtime source
         shell: pwsh
