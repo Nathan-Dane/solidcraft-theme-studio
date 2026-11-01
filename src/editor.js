@@ -1,6 +1,7 @@
 import { el, field, heading, button } from './dom.js';
 import { at, put, pretty, clone } from './state.js';
-import { friendly, paletteEditor, surfaceEditor, iconEditor, workspaceEditor, optionsEditor } from './authoring.js';
+import { friendly, paletteEditor, optionsEditor } from './authoring.js';
+import { elementEditor, workspaceEditor, locate } from './elements.js';
 
 export class Editor {
   constructor(container, store, notify) { this.root = container; this.store = store; this.notify = notify; this.section = 'overview'; this.contract = {}; this.result = null; }
@@ -12,21 +13,23 @@ export class Editor {
     if (state.parseError && section !== 'source') {
       this.root.append(heading('A LITTLE REPAIR FIRST', 'Your draft needs a look.', 'There is a JSON syntax error. Your last valid preview is safe.'), el('div', { class: 'error-list' }, state.parseError), button('Open source', () => this.select('source'))); return;
     }
-    ({ overview: () => this.overview(), palette: () => this.palette(), surfaces: () => this.surfaces(), icons: () => this.icons(), tabs: () => this.tabs(), options: () => this.options(), source: () => this.source() }[section] || (() => this.overview()))();
+    ({ overview: () => this.overview(), interface: () => elementEditor(this, 'interface'), viewport: () => elementEditor(this, 'viewport'), text: () => elementEditor(this, 'text'), workspaces: () => workspaceEditor(this), palette: () => paletteEditor(this), options: () => this.options(), source: () => this.source() }[section] || (() => this.overview()))();
   }
   select(section) { document.querySelector(`[data-section="${section}"]`)?.click(); }
   roleTarget(key) {
-    if (key.startsWith('icon_palette.')) return { section: 'icons', property: key };
-    if (key.startsWith('borders.')) return { section: 'surfaces', property: key.split('.').slice(0, 2).join('.') };
-    const radius = key.replace(/^radii\./, '');
-    if ((this.contract.radiusKeys || []).some(item => (typeof item === 'string' ? item : item.key) === radius)) return { section: 'surfaces', property: `radii.${radius}` };
-    if (this.keys('color').includes(key)) return { section: 'palette', token: key };
-    return null;
+    const found = locate(this, key);
+    if (found) return found;
+    return this.keys('color').includes(key) ? { section: 'palette', token: key } : null;
   }
   navigateRole(key) {
     const target = this.roleTarget(key); if (!target) return;
     this.select(target.section);
-    if (target.token) {
+    if (target.group) {
+      this.root._reveal?.(target.group);
+      const group = this.root.querySelector(`[data-group="${CSS.escape(target.group)}"]`);
+      if (group) { group.hidden = false; group.open = true; group._build?.(); }
+    }
+    if (target.section === 'palette') {
       const search = this.root.querySelector('.token-search');
       if (search) { search.value = target.token; search.dispatchEvent(new Event('input', { bubbles: true })); }
     }
@@ -67,7 +70,7 @@ export class Editor {
     this.root.append(field('Provenance', this.text(['provenance']), 'Credit the palette’s author or describe its origin.'));
     this.root.append(el('div', { class: 'inline-row' }, field('Picker order', this.number(['order'], { step: 1 })), field('Required theme level', this.number(['requires'], { min: 0, step: 1 }))));
     this.root.append(el('p', { class: 'field-help' }, 'Level 2 enables continuous surface brightness. Keep unknown metadata in Source; imports and exports preserve your authored document.'));
-    this.root.append(el('hr', { class: 'section-rule' }), el('h3', { class: 'small-heading' }, 'Choose your next brush'), el('div', { class: 'button-row' }, button('Edit palette', () => this.select('palette')), button('Build options', () => this.select('options')), button('See the source', () => this.select('source'))));
+    this.root.append(el('hr', { class: 'section-rule' }), el('h3', { class: 'small-heading' }, 'Choose your next brush'), el('div', { class: 'button-row' }, button('Style the interface', () => this.select('interface')), button('Build options', () => this.select('options')), button('See the source', () => this.select('source'))));
     this.root.append(el('h3', { class: 'small-heading' }, 'Or start from a clean foundation'), el('div', { class: 'button-row' }, ...['dark', 'light'].map(base => button(`New ${base} theme`, () => { if (this.store.get().dirty && !confirm('Start a new theme? The current document stays available through Undo.')) return; this.store.replace({ format: this.contract.format || 'solidcraft-theme/1', name: 'Untitled theme', base }, false); }))));
   }
   keys(kind, authored = {}) {
@@ -109,12 +112,6 @@ export class Editor {
     });
     return card;
   }
-  palette() {
-    paletteEditor(this);
-  }
-  surfaces() { surfaceEditor(this); }
-  icons() { iconEditor(this); }
-  tabs() { workspaceEditor(this); }
   options() { optionsEditor(this); }
   source() {
     this.root.append(heading('NOTHING HIDDEN', 'Your theme, in full.', 'The complete authored definition. Valid edits update the preview; an unfinished draft keeps the last good appearance.'));

@@ -312,3 +312,29 @@ dialog p{font-size:13px;line-height:1.65;color:var(--muted)}
   .inspection-panel{left:8px;right:8px;bottom:8px;max-height:150px}.inspection-raw{display:none}
   .loading-scene-list{display:none}
 }
+
+/* Element groups: one card per part of the app, with colours, corners and lines together. */
+.element-group{margin:0 0 10px;border:1px solid var(--line);border-radius:var(--radius-lg);background:var(--panel);overflow:hidden}
+.element-group[hidden]{display:none}
+.element-group>summary{display:flex;align-items:center;gap:10px;padding:12px 14px;cursor:pointer;list-style:none;font-size:13px;font-weight:600}
+.element-group>summary::-webkit-details-marker{display:none}
+.element-group>summary::before{content:'';width:6px;height:6px;border-right:1.5px solid var(--muted);border-bottom:1.5px solid var(--muted);transform:rotate(-45deg);transition:transform .12s;flex:none}
+.element-group[open]>summary::before{transform:rotate(45deg)}
+.element-group>summary>span:first-of-type{margin-right:auto}
+.element-body{display:flex;flex-direction:column;gap:14px;padding:2px 12px 14px}
+.element-body .group-description{margin:0 2px}
+.part-heading{margin:0 0 8px;font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.element-colors{display:grid;grid-template-columns:1fr;gap:8px}
+@container (min-width:620px){.element-colors{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@container (min-width:960px){.element-colors{grid-template-columns:repeat(3,minmax(0,1fr))}}
+.element-body .card-grid{grid-template-columns:1fr}
+@container (min-width:620px){.element-body .card-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.element-body .disclosure-card{background:var(--soft)}
+/* Compact colour cards inside element groups: swatch, value and alpha on one row. */
+.element-colors .token-card{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,1fr);gap:0 12px;align-items:center;padding:9px 12px}
+.element-colors .token-card>.token-topline{grid-column:1/-1;margin-bottom:2px}
+.element-colors .token-card>.token-input-row{margin-top:0}
+.element-colors .token-card>.alpha-row{margin-top:0;gap:6px}
+.element-colors .token-card>.alpha-row>span{display:none}
+.element-colors .token-card>.alpha-row output{min-width:30px}
+.element-colors .token-card .token-input-row input[type=color]{width:30px;height:30px}

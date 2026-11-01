@@ -40,7 +40,7 @@ function paletteGroup(key) {
   return 'details';
 }
 export function paletteEditor(editor) {
-  editor.root.append(heading('COLOUR, WITH CONTEXT', 'Find your balance.', 'Browse by purpose, then judge the real components beside you. A colour can always go back to its inherited value.'));
+  editor.root.append(heading('EVERY ROLE', 'All colour roles.', 'The complete list, searchable by name. Most themes are easier to shape from the element tabs; use this to find one exact role.'));
   const search = el('input', { type: 'search', placeholder: 'Find panel, axis, text…', class: 'token-search input', 'aria-label': 'Find a colour role' });
   const facets = el('div', { class: 'palette-facets', 'aria-label': 'Colour role groups' }), list = el('div');
   let facet = 'all';
@@ -49,7 +49,7 @@ export function paletteEditor(editor) {
   const draw = () => {
     list.replaceChildren(); facets.replaceChildren();
     for (const [id, name] of [['all', 'All roles'], ...PALETTE_GROUPS]) {
-      const control = button(name, () => { facet = id; draw(); const scene = { surfaces: 'glass', text: 'controls', interaction: 'browser', viewport: 'viewport', workspace: 'tools', status: 'browser', details: 'glass' }[id]; if (scene) window.dispatchEvent(new CustomEvent('solidcraft-theme-studio-focus', { detail: { scene } })); }, `facet${facet === id ? ' selected' : ''}`); control.setAttribute('aria-pressed', facet === id); facets.append(control);
+      const control = button(name, () => { facet = id; draw(); }, `facet${facet === id ? ' selected' : ''}`); control.setAttribute('aria-pressed', facet === id); facets.append(control);
     }
     const query = search.value.trim().toLowerCase(); let count = 0;
     for (const [id, name, description] of PALETTE_GROUPS) {
@@ -92,62 +92,48 @@ export function borderFields(editor, path, role) {
   for (const key of role === 'bevel' ? schema.bevel?.colors || ['highlight', 'light', 'shadow', 'dark_shadow'] : ['color']) wrap.append(editor.token([...path, key], friendly(key), value[key], { inheritable: false }));
   return wrap;
 }
-export function surfaceEditor(editor) {
-  editor.root.append(heading('QUIET EDGES', 'Shape & edges.', 'A little rounding. A fine line. Change the material details using the same roles as the app.'));
-  const radii = editor.contract.radiusKeys || [], doc = editor.store.get().document;
-  editor.root.append(el('h3', { class: 'small-heading' }, 'Corner radii'));
-  const radiiCard = el('div', { class: 'group-card radii-card' });
-  editor.root.append(radiiCard);
-  for (const spec of radii) {
-    const key = typeof spec === 'string' ? spec : spec.key, authored = doc.radii?.[key], fallback = editor.result?.resolved?.radii?.[key] ?? defaults(editor).radii?.[key] ?? 0;
-    const input = el('input', { type: 'range', min: spec.min ?? 0, max: spec.max ?? 32, step: 1, value: authored ?? fallback, 'aria-label': friendly(key) });
-    const output = el('output', {}, `${authored ?? fallback} pt`);
-    const inherit = button('↺', () => { editor.update(['radii', key], undefined); editor.show(); }, 'reset-chip'); inherit.disabled = authored === undefined;
-    inherit.setAttribute('aria-label', `Use inherited ${friendly(key)}`); inherit.title = authored === undefined ? 'Inherited' : 'Use inherited value';
-    input.addEventListener('input', () => { output.textContent = `${input.value} pt`; inherit.disabled = false; inherit.title = 'Use inherited value'; editor.update(['radii', key], input.valueAsNumber, true); }); input.addEventListener('change', () => editor.store.endTransaction());
-    radiiCard.append(el('div', { class: 'radius-control', 'data-property': `radii.${key}` }, el('span', { class: 'field-label' }, friendly(key)), input, output, inherit));
-  }
-  editor.root.append(el('h3', { class: 'small-heading' }, 'Border treatments'), el('p', { class: 'field-help' }, 'Inherited borders retain each host’s native styling. Explicit borders can coexist: an inset line does not replace the outer stroke.'));
-  const borderGrid = el('div', { class: 'card-grid' });
-  editor.root.append(borderGrid);
-  for (const role of editor.contract.borderSchema?.roles || ['primary', 'secondary', 'tertiary', 'container', 'control', 'primary_inset', 'bevel']) {
-    const value = doc.borders?.[role], details = el('details', { class: 'disclosure-card', 'data-property': `borders.${role}` }, el('summary', {}, friendly(role), el('span', { class: 'pill' }, value === undefined ? 'Inherited' : 'Authored')));
-    if (value === undefined) details.append(button('Author this border', () => { editor.update(['borders', role], borderDefault(editor, role)); editor.show(); }));
-    else details.append(borderFields(editor, ['borders', role], role), button('Use inherited border', () => { editor.update(['borders', role], undefined); editor.show(); }, 'text-button'));
-    borderGrid.append(details);
-  }
+/** The colour a role shows when the theme does not author it. */
+export const fallbackColor = (editor, key) => editor.result?.resolved?.colors?.[key] ?? defaults(editor).colors?.[key];
+
+/** One corner radius: slider, readout and a reset to the inherited value. */
+export function radiusControl(editor, key) {
+  const spec = (editor.contract.radiusKeys || []).find(item => (typeof item === 'string' ? item : item.key) === key) || {};
+  const doc = editor.store.get().document, authored = doc.radii?.[key], fallback = editor.result?.resolved?.radii?.[key] ?? defaults(editor).radii?.[key] ?? 0;
+  const input = el('input', { type: 'range', min: spec.min ?? 0, max: spec.max ?? 32, step: 1, value: authored ?? fallback, 'aria-label': friendly(key) });
+  const output = el('output', {}, `${authored ?? fallback} pt`);
+  const inherit = button('\u21ba', () => { editor.update(['radii', key], undefined); editor.show(); }, 'reset-chip'); inherit.disabled = authored === undefined;
+  inherit.setAttribute('aria-label', `Use inherited ${friendly(key)}`); inherit.title = authored === undefined ? 'Inherited' : 'Use inherited value';
+  input.addEventListener('input', () => { output.textContent = `${input.value} pt`; inherit.disabled = false; inherit.title = 'Use inherited value'; editor.update(['radii', key], input.valueAsNumber, true); });
+  input.addEventListener('change', () => editor.store.endTransaction());
+  return el('div', { class: 'radius-control', 'data-property': `radii.${key}` }, el('span', { class: 'field-label' }, friendly(key)), input, output, inherit);
 }
-export function iconEditor(editor) {
-  editor.root.append(heading('SMALL, BUT IMPORTANT', 'Icon colours.', 'Original SolidCraft artwork, recoloured by meaning. Masks and transparent gaps remain untouched.'));
-  const palette = editor.store.get().document.icon_palette || {}, native = editor.contract.iconDefaults?.[editor.store.get().document.base] || {};
-  for (const [kind, title, keys] of [['roles', 'Drawing roles', editor.contract.iconRoleKeys || []], ['ramps', 'Semantic ramps', editor.contract.iconAccentKeys || []]]) {
-    editor.root.append(el('h3', { class: 'group-heading' }, title));
-    const grid = el('div', { class: 'card-grid' }); editor.root.append(grid);
-    const all = [...new Set([...keys, ...Object.keys(palette).filter(key => kind === 'ramps' ? Array.isArray(palette[key]) : !Array.isArray(palette[key]))])];
-    for (const key of all) {
-      const authored = palette[key];
-      const details = el('details', { class: 'disclosure-card', open: authored !== undefined, 'data-property': `icon_palette.${key}` }, el('summary', {}, friendly(key), el('span', { class: 'pill' }, authored === undefined ? 'Inherited' : 'Authored')));
-      if (authored === undefined) {
-        const add = button('Author this colour', () => { editor.update(['icon_palette', key], clone(native[key])); editor.show(); }); add.disabled = native[key] === undefined;
-        details.append(el('p', { class: 'field-help' }, kind === 'ramps' ? 'Keeps the compiled ramp for this semantic meaning. A custom Solid ramp does not replace omitted workspace ramps.' : 'Keeps the native light/dark role colour.'), add);
-      }
-      else details.append(editor.token(['icon_palette', key], key, authored));
-      grid.append(details);
-    }
-  }
-  editor.root.append(el('p', { class: 'field-help' }, 'Icon colours are opaque RGB. Colour-vision variants take priority in the real preview. GAP is a transparent eraser and cannot be authored as a colour.'));
+
+/** One border role: its width, pattern and colour together, authored or inherited. */
+export function borderCard(editor, role, note) {
+  const value = editor.store.get().document.borders?.[role];
+  const details = el('details', { class: 'disclosure-card', open: value !== undefined, 'data-property': `borders.${role}` }, el('summary', {}, friendly(role), el('span', { class: 'pill' }, value === undefined ? 'Inherited' : 'Authored')));
+  if (note) details.append(el('p', { class: 'field-help' }, note));
+  if (value === undefined) details.append(button('Author this line', () => { editor.update(['borders', role], borderDefault(editor, role)); editor.show(); }));
+  else details.append(borderFields(editor, ['borders', role], role), button('Use inherited line', () => { editor.update(['borders', role], undefined); editor.show(); }, 'text-button'));
+  return details;
 }
-export function workspaceEditor(editor) {
-  editor.root.append(heading('A CHANGE OF SCENERY', 'Workspace colours.', 'Three carefully chosen surfaces per workspace. Preview transitions by enabling Tab colours above the canvas.'));
-  const authored = editor.store.get().document.tabs || {}, tabs = editor.contract.tabsAllowed || [], keys = editor.contract.tabSurfaceKeys || ['panel', 'viewport_top', 'viewport_bottom'];
-  const grid = el('div', { class: 'card-grid' }); editor.root.append(grid);
-  for (const tab of [...new Set([...Object.keys(authored), ...tabs])]) {
-    const values = authored[tab], details = el('details', { class: 'disclosure-card' }, el('summary', {}, tab, el('span', { class: 'pill' }, values ? `${Object.keys(values).length} surfaces` : 'Inherited')));
-    details.append(button('View this workspace', () => editor.store.setContext(tab, editor.store.get().vision), 'button small'));
-    for (const key of keys) details.append(editor.token(['tabs', tab, key], key, defaults(editor).colors?.[key]));
-    if (values) details.append(button('Use inherited workspace colours', () => { editor.update(['tabs', tab], undefined); editor.show(); }, 'text-button'));
+
+/** The icon colours: opaque drawing-role colours, or the semantic accent ramps. */
+export function iconCards(editor, kind) {
+  const doc = editor.store.get().document, palette = doc.icon_palette || {}, native = editor.contract.iconDefaults?.[doc.base] || {};
+  const keys = kind === 'roles' ? editor.contract.iconRoleKeys || [] : editor.contract.iconAccentKeys || [];
+  const grid = el('div', { class: 'card-grid' });
+  const all = [...new Set([...keys, ...Object.keys(palette).filter(key => kind === 'ramps' ? Array.isArray(palette[key]) : !Array.isArray(palette[key]))])];
+  for (const key of all) {
+    const authored = palette[key];
+    const details = el('details', { class: 'disclosure-card', open: authored !== undefined, 'data-property': `icon_palette.${key}` }, el('summary', {}, friendly(key), el('span', { class: 'pill' }, authored === undefined ? 'Inherited' : 'Authored')));
+    if (authored === undefined) {
+      const add = button('Author this colour', () => { editor.update(['icon_palette', key], clone(native[key])); editor.show(); }); add.disabled = native[key] === undefined;
+      details.append(el('p', { class: 'field-help' }, kind === 'ramps' ? 'Keeps the compiled ramp for this meaning. A custom Solid ramp does not replace omitted workspace ramps.' : 'Keeps the native light/dark role colour.'), add);
+    } else details.append(editor.token(['icon_palette', key], key, authored));
     grid.append(details);
   }
+  return grid;
 }
 
 function uniqueId(items, prefix) { let name = prefix, n = 2; while (items.some(item => item.id === name)) name = `${prefix}_${n++}`; return name; }

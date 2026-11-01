@@ -22,7 +22,7 @@ let ready = false, previewReady = false, rendererPresented = false, schema = nul
 let expectedNativePreview = null;
 let rendererInfo = null;
 let previewLanguage = 'en-GB';
-const categoryScene = { surfaces: 'app', icons: 'icons', tabs: 'app', options: 'app' };
+const categoryScene = { interface: 'app', workspaces: 'app', viewport: 'sketch', text: 'icons' };
 const sceneNames = { app: 'Full app', sketch: 'Sketch', icons: 'Icons' };
 const recovered = store.recover();
 if (recovered) notify('Your last theme draft is back on the workbench.');
@@ -177,7 +177,8 @@ for (const tab of document.querySelectorAll('[data-section]')) {
     const offset = $('.preview-shell').getBoundingClientRect().height + $('.editor-navigation').getBoundingClientRect().height + 12;
     window.scrollTo({ top: Math.max(0, window.scrollY + heading.getBoundingClientRect().top - offset), behavior: 'instant' });
   }
-  if (categoryScene[tab.dataset.section]) applyView({ focusScene: categoryScene[tab.dataset.section] }).catch(error => notify(error.message));
+  const scene = categoryScene[tab.dataset.section], sceneSelect = $('#scene-select');
+  if (scene && !sceneSelect.disabled && sceneSelect.value !== scene) { sceneSelect.value = scene; sceneSelect.dispatchEvent(new Event('change')); }
   $('#editor-title')?.focus({ preventScroll: true });
   });
 }
