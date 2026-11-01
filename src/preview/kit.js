@@ -111,16 +111,17 @@ export class Kit {
     host.append(this.iconAt('plus', 16, 902 - ox, 62 - oy, { ink: t.c('text_dim') }));
     // Search: a control_fill box (the form scope's field), the zoom icon, dim hint text and an S keycap.
     const searchW = 174, searchLeft = width - 9 - searchW;
-    const search = tag(abs('pv-field pv-search', rect(searchLeft, 51 - oy, searchW, 28)), 'Search commands', ['control_fill', 'control_border', 'form_dim']);
-    search.append(this.iconAt('zoom', 15, 13, 14, { ink: t.c('form_dim') }), textAt('Search commands', 28, 14, 'dim pv-fs15'));
-    const key = abs('pv-keycap', rect(searchW - 24, 4, 20, 20));
-    key.append(textAt('S', 10, 10, 'dim pv-fs13', 'center'));
+    const search = tag(abs('pv-field pv-search', rect(searchLeft, 51 - oy, searchW, 24)), 'Search commands', ['control_fill', 'control_border', 'form_dim']);
+    search.append(this.iconAt('zoom', 14, 13.3, 12, { ink: t.c('form_dim') }), textAt('Search commands', 28, 12, 'dim pv-fs15'));
+    const key = abs('pv-keycap', rect(searchW - 15, 2.5, 11, 17));
+    key.append(textAt('S', 5.5, 8.5, 'dim pv-fs13', 'center'));
     search.append(key);
     host.append(search);
+    host.append(abs('pv-sep pv-hsep', rect(0, 78.5 - oy, width - 2, 1)));
     // Commands: every cell is a full-height box (icon and label) with the same gap to its neighbours.
     // Each section ends with a separator, including after the last one.
     const cellGap = 3.5, padRight = [1, 5, 6.5, 4, 4.5, 4.5];
-    let x = 114;
+    let x = 114, sectionLeft = 111;
     groups.forEach(([group, tools], g) => {
       const start = x;
       tools.forEach(([icon, label]) => {
@@ -132,13 +133,14 @@ export class Kit {
       });
       x -= cellGap;
       const centre = (start + x) / 2;
-      const lw = this.measure(group, 14) + 14 + 2 + 20;
-      const pill = tag(abs('pv-glabel', rect(centre - lw / 2 - ox, 151 - oy, lw, 22)), group, ['text_dim', 'hover']);
-      pill.append(this.labelChevron(group, lw / 2, 11, 'dim pv-fs14'));
+      const sepX = x + padRight[g];
+      const sectionW = sepX - sectionLeft - 4;
+      const pill = tag(abs('pv-glabel', rect(sectionLeft + 2 - ox, 151 - oy, sectionW, 22)), group, ['text_dim', 'hover']);
+      pill.append(this.labelChevron(group, sectionW / 2, 11, 'dim pv-fs14'));
       host.append(pill);
-      x += padRight[g];
-      host.append(abs('pv-sep', rect(x - ox, 86 - oy, 1, 86)));
-      x += 1 + 5;
+      host.append(abs('pv-sep', rect(sepX - ox, 86 - oy, 1, 86)));
+      x = sepX + 1 + 5;
+      sectionLeft = sepX + 1;
     });
   }
 

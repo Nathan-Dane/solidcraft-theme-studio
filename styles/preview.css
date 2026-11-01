@@ -137,4 +137,4 @@
 /* Ribbon: section names highlight like commands; the search field is a control_fill field with a keycap. */
 .pv-glabel{position:absolute;border-radius:6px}.pv-glabel:hover{background:var(--c-hover)}
 .pv-field.pv-search{background:var(--c-control-fill);border-radius:8px}
-.pv-keycap{position:absolute;border:1px solid var(--c-control-border);border-radius:5px;background:transparent}
+.pv-keycap{position:absolute;border-radius:5px;background:var(--c-field)}
