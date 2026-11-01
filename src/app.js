@@ -22,8 +22,8 @@ let ready = false, previewReady = false, rendererPresented = false, schema = nul
 let expectedNativePreview = null;
 let rendererInfo = null;
 let previewLanguage = 'en-GB';
-const categoryScene = { surfaces: 'glass', icons: 'icons', tabs: 'tools', options: 'controls' };
-const sceneNames = { app: 'Full app', tools: 'Tools & tabs', browser: 'Browser & history', controls: 'Feature controls', glass: 'Glass & menus', viewport: 'Viewport details', icons: 'Icon lab' };
+const categoryScene = { surfaces: 'app', icons: 'icons', tabs: 'app', options: 'app' };
+const sceneNames = { app: 'Full app', sketch: 'Sketch', icons: 'Icons' };
 const recovered = store.recover();
 if (recovered) notify('Your last theme draft is back on the workbench.');
 
@@ -330,7 +330,7 @@ async function startRuntime(withPreview = true) {
       }));
       previewLanguage = schema.defaultLanguage || 'en-GB'; $('#language-select').value = previewLanguage; $('#language-select').disabled = !previewReady;
     }
-    document.querySelector('[data-scene=app]').hidden = false;
+    document.querySelector('[data-scene=app]').hidden = false; document.querySelector('[data-scene=sketch]').hidden = false;
     $('#scene-select').value = 'app'; htmlPreview.setScene('app');
     if (gpuMode && typeof engine.setView === 'function') await bridge.call('setView', JSON.stringify({ scene: 'app' }));
     editor.setRuntime(schema, evaluation); editor.show();

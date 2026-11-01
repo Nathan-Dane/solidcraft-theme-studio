@@ -144,7 +144,7 @@
 .pv-part.panning{cursor:grabbing}
 
 /* ---- Component scenes ---- */
-.pv-root[data-scene]:not([data-scene=app]){overflow-y:auto;overflow-x:hidden;scrollbar-width:thin}
+.pv-root[data-scene=icons]{overflow-y:auto;overflow-x:hidden;scrollbar-width:thin}
 .pv-board{position:relative;width:100%}
 .pv-slider{position:absolute}.pv-slider .pv-track{position:absolute;background:var(--c-dialog-rule);border-radius:2px}
 .pv-slider .pv-fill{position:absolute;background:var(--c-form-primary);border-radius:2px}
@@ -160,3 +160,5 @@
 .pv-mitem{position:absolute;border-radius:5px}.pv-mitem.on,.pv-mitem:hover{background:var(--c-selected-bg)}
 .pv-filecard{position:absolute;border-radius:10px;background:var(--c-file-surface,var(--c-panel));border:1px solid var(--c-file-primary-border,var(--c-border))}
 .pv-pending{position:static}
+
+.pv-icell{position:absolute;border-radius:var(--m-radius-sm,6px);cursor:pointer}.pv-icell:hover,.pv-icell.on{background:var(--c-selected-bg)}

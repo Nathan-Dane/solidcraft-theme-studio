@@ -73,7 +73,7 @@ export class HtmlPreview {
     this.root.style.setProperty('--inset-color', inset?.color ?? 'transparent');
     this.root.style.setProperty('--border-color-dialog', t.borders.primary?.color ?? t.c('dialog_border'));
     this.root.classList.toggle('dark', t.dark);
-    const build = this.scene === 'app' ? (kit, stage, state) => appScene(kit, stage, state, this.dev) : scenes[this.scene] || scenes.all;
+    const build = this.scene === 'app' || this.scene === 'sketch' ? (kit, stage, state) => appScene(kit, stage, state, this.dev, this.scene) : scenes[this.scene];
     this.root.replaceChildren(build(this.kit, this.size, this.state, this.scene));
     this.root.dataset.scene = this.scene;
     if (this.dev) this.root.dataset.refview = this.dev.view; else delete this.root.dataset.refview;
@@ -143,6 +143,8 @@ export class HtmlPreview {
   }
 
   click(event) {
+    const cell = !this.inspect && event.target.closest?.('.pv-icell');
+    if (cell) { this.state.iconSelected = cell.dataset.icon; const top = this.root.scrollTop; this.render(); this.root.scrollTop = top; return; }
     if (!this.inspect) return;
     const node = this.target(event);
     const hit = this.hit(node);

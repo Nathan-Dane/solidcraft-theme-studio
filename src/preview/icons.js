@@ -67,3 +67,14 @@ export class Icons {
     return span;
   }
 }
+
+/** The library's icon ids grouped by the artwork folder they ship in (flat, model, workspace ...). */
+export function iconGroups() {
+  const groups = new Map();
+  for (const [id, path] of Object.entries(files?.masters || {})) {
+    const name = path.split('/')[0];
+    if (!groups.has(name)) groups.set(name, []);
+    groups.get(name).push(id);
+  }
+  return [...groups].map(([name, ids]) => ({ name: name[0].toUpperCase() + name.slice(1), ids: ids.sort() }));
+}

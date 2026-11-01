@@ -5,6 +5,7 @@
 import { el } from '../dom.js';
 import { abs, card, rect, tag, textAt } from './kit.js';
 import { part } from './part.js';
+import { sketchView } from './sketch.js';
 
 export const REFERENCE = { w: 1276, h: 848 };
 export const MIN_SIZE = { w: 1276, h: 848 };
@@ -40,12 +41,12 @@ export function fit(stage, dev) {
   return { zoom, w: stage.w / zoom, h: stage.h / zoom, tx: 0, ty: 0 };
 }
 
-export function appScene(kit, stage, state, dev) {
+export function appScene(kit, stage, state, dev, mode = 'app') {
   const t = kit.t;
   const { zoom, w: W, h: H, tx, ty } = fit(stage, dev);
   const root = el('div', { class: 'pv-scene' });
   root.style.cssText = `width:${W}px;height:${H}px;transform:translate(${tx}px,${ty}px) scale(${zoom});transform-origin:0 0`;
-  root.append(part(t, W, H, state.pan));
+  root.append(mode === 'sketch' ? sketchView(t, W, H, state.pan) : part(t, W, H, state.pan));
 
   root.append(kit.appBar(rect(0, 0, W, 38), state));
 
@@ -74,7 +75,7 @@ export function appScene(kit, stage, state, dev) {
   const dialogSize = { w: 298, h: 438 }, drag = state.dialog;
   const anchor = { x: W - M - dialogSize.w, y: compass.y + compass.h + M };
   const dialogX = Math.min(Math.max(anchor.x + drag.dx, 0), W - dialogSize.w), dialogY = Math.min(Math.max(anchor.y + drag.dy, 0), H - 60);
-  root.append(kit.extrudeDialog(rect(dialogX, dialogY, dialogSize.w, dialogSize.h), state));
+  if (mode !== 'sketch') root.append(kit.extrudeDialog(rect(dialogX, dialogY, dialogSize.w, dialogSize.h), state));
 
   const historyRect = rect(M, H - M - 44, W - 2 * M, 44);
   const strip = card('panel', historyRect);
