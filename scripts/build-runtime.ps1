@@ -27,7 +27,10 @@ $env:SOLIDCRAFT_THEME_STUDIO_REVISION = $revision + $(if ($dirty) { '-dirty' } e
 try {
     Push-Location (Join-Path $SourcePath $source.workspaceApp)
     try {
-        if ($Development) { trunk build --locked true } else { trunk build --release --locked true }
+        # Message catalogs are served as files, not compiled in (the lazy-locales feature); the runtime's build
+        # script writes the merged catalogs here. A published build uses the size-tuned web-studio profile.
+        $env:SOLIDCRAFT_LOCALES_OUT = Join-Path $SourcePath 'target/theme-studio-locales'
+        if ($Development) { trunk build --locked true } else { trunk build --cargo-profile web-studio --locked true }
         if ($LASTEXITCODE -ne 0) { throw 'Rust/Trunk runtime build failed; existing preview artifacts were retained.' }
     } finally { Pop-Location }
     # Cargo/Trunk may update the lockfile. Published provenance must describe the
@@ -66,6 +69,12 @@ try {
         $licensePaths += $relative
         $licenseHashes[$relative] = (Get-FileHash -LiteralPath $original -Algorithm SHA256).Hash.ToLowerInvariant()
     }
+    $localesSource = Join-Path $SourcePath 'target/theme-studio-locales'
+    if (-not (Test-Path -LiteralPath $localesSource) -or -not (Get-ChildItem -LiteralPath $localesSource -Filter '*.json')) { throw 'The runtime build did not write its message catalogs.' }
+    $localesDir = Join-Path $runtimeDir 'locales'
+    if (Test-Path -LiteralPath $localesDir) { Remove-Item -LiteralPath $localesDir -Recurse -Force }
+    New-Item -ItemType Directory -Force -Path $localesDir | Out-Null
+    Copy-Item -Path (Join-Path $localesSource '*.json') -Destination $localesDir -Force
     $fontDir = Join-Path $runtimeDir 'fonts'
     New-Item -ItemType Directory -Force -Path $fontDir | Out-Null
     $fontPaths = @()

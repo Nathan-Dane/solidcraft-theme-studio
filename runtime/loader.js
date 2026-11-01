@@ -32,10 +32,24 @@ try {
     const result = JSON.parse(runtime.setScriptFont(language, await fontBytes.get(language)));
     if (!result.ok) throw new Error(result.errors?.join(' ') || 'Native font installation failed.');
   }
+  // Catalogs the runtime leaves out of the WASM are fetched when their language is first chosen.
+  const catalogs = new Map();
+  async function installLanguageCatalog(language) {
+    if (!metadata.lazyLanguages?.includes(language) || typeof runtime.installCatalog !== 'function') return;
+    if (!catalogs.has(language)) {
+      catalogs.set(language, fetch(new URL(`locales/${language}.json`, root)).then(async response => {
+        if (!response.ok) throw new Error(`Message catalog unavailable (${language}).`);
+        const result = JSON.parse(runtime.installCatalog(language, await response.text()));
+        if (!result.ok) throw new Error(result.errors?.join(' ') || 'Message catalog installation failed.');
+      }).catch(error => { catalogs.delete(language); throw error; }));
+    }
+    await catalogs.get(language);
+  }
   let currentLanguage = metadata.defaultLanguage || 'en-GB';
   const viewAPI = typeof runtime.setView === 'function' ? {
     setView: async config => {
       const value = typeof config === 'string' ? JSON.parse(config) : config;
+      if (value.language) await installLanguageCatalog(value.language);
       const result = guarded(runtime.setView)(JSON.stringify(value));
       if (JSON.parse(result).ok) {
         currentLanguage = value.language || currentLanguage;

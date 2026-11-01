@@ -4,6 +4,7 @@
 /runtime/pkg/
 /runtime/licenses/
 /runtime/fonts/
+/runtime/locales/
 /runtime/manifest.json
 *.log
 .DS_Store
