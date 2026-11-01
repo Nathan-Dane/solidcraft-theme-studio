@@ -22,7 +22,7 @@ export class HtmlPreview {
     this.kit = new Kit(this.tokens, this.icons);
     window.__preview = this;
     this.scene = 'app';
-    this.state = { tab: 'MODEL', bodiesOpen: true, history: 8, form: { direction: 'One Side', extent: 'Distance', operation: 'Join' } };
+    this.state = { tab: 'MODEL', bodiesOpen: true, history: 8, dialog: { dx: 0, dy: 0 }, form: { direction: 'One Side', extent: 'Distance', operation: 'Join' } };
     this.inspect = false; this.locked = null;
     this.root = el('div', { class: 'pv-root', tabindex: '0', 'aria-label': 'SolidCraft interface preview' });
     stage.prepend(this.root);
@@ -35,6 +35,7 @@ export class HtmlPreview {
     this.root.addEventListener('pointermove', event => this.hover(event));
     this.root.addEventListener('pointerleave', () => this.hover(null));
     this.root.addEventListener('click', event => this.click(event));
+    this.root.addEventListener('pointerdown', event => this.startDrag(event));
   }
 
   /** Development comparison against a screenshot of the real window: ?ref&view=diff|ref|html&crop=x,y,w,h */
@@ -75,6 +76,32 @@ export class HtmlPreview {
     this.root.dataset.scene = this.scene;
     if (this.dev) this.root.dataset.refview = this.dev.view; else delete this.root.dataset.refview;
     this.mark(this.locked?.label ?? null);
+  }
+
+  /** Drag a feature dialog by its header; the offset is kept so a re-render does not move it back. */
+  startDrag(event) {
+    const handle = event.target.closest?.('[data-drag]');
+    const dialog = handle?.closest('.pv-dialog');
+    const win = this.root.querySelector('.pv-scene');
+    if (!dialog || !win || this.inspect || event.button !== 0) return;
+    const zoom = win.getBoundingClientRect().width / win.offsetWidth;
+    const start = { x: event.clientX, y: event.clientY, dx: this.state.dialog.dx, dy: this.state.dialog.dy };
+    const home = { left: dialog.offsetLeft - start.dx, top: dialog.offsetTop - start.dy };
+    handle.setPointerCapture(event.pointerId);
+    dialog.classList.add('dragging');
+    const move = e => {
+      const dx = start.dx + (e.clientX - start.x) / zoom, dy = start.dy + (e.clientY - start.y) / zoom;
+      const left = Math.min(Math.max(home.left + dx, 0), win.offsetWidth - dialog.offsetWidth);
+      const top = Math.min(Math.max(home.top + dy, 0), win.offsetHeight - 60);
+      this.state.dialog = { dx: left - home.left, dy: top - home.top };
+      dialog.style.left = left + 'px'; dialog.style.top = top + 'px';
+    };
+    const end = () => {
+      handle.removeEventListener('pointermove', move); handle.removeEventListener('pointerup', end); handle.removeEventListener('pointercancel', end);
+      dialog.classList.remove('dragging');
+    };
+    handle.addEventListener('pointermove', move); handle.addEventListener('pointerup', end); handle.addEventListener('pointercancel', end);
+    event.preventDefault();
   }
 
   target(event) { return event?.target?.closest?.('[data-label]') ?? null; }

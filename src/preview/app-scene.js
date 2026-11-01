@@ -42,7 +42,7 @@ export function fit(stage, dev) {
 export function appScene(kit, stage, state, dev) {
   const t = kit.t;
   const { zoom, w: W, h: H, tx, ty } = fit(stage, dev);
-  const root = el('div', { class: 'pv-window' });
+  const root = el('div', { class: 'pv-scene' });
   root.style.cssText = `width:${W}px;height:${H}px;transform:translate(${tx}px,${ty}px) scale(${zoom});transform-origin:0 0`;
   root.append(part(t, W, H));
 
@@ -67,10 +67,11 @@ export function appScene(kit, stage, state, dev) {
   root.append(kit.navCube(rect(W - M - 123, 195, 115, 112)));
   root.append(kit.navToolbar(rect(598 + dx / 2, 740 + dy, 378, 43)));
 
-  const dialog = card('window', rect(W - M - 298 - 4, 322 + dy, 298, 438));
-  tag(dialog, 'Extrude dialog', ['dialog_body', 'dialog_border']);
-  kit.extrudeDialog(dialog, 298, 438, state, 322 + dy);
-  root.append(dialog);
+  // The feature dialog is anchored to the top right, below the compass, and can be dragged.
+  const dialogSize = { w: 298, h: 438 }, drag = state.dialog;
+  const anchor = { x: W - 7 - dialogSize.w, y: 195 + 112 + 15 };
+  const dialogX = Math.min(Math.max(anchor.x + drag.dx, 0), W - dialogSize.w), dialogY = Math.min(Math.max(anchor.y + drag.dy, 0), H - 60);
+  root.append(kit.extrudeDialog(rect(dialogX, dialogY, dialogSize.w, dialogSize.h), state));
 
   const historyRect = rect(M, H - M - 44, W - 2 * M, 44);
   const strip = card('panel', historyRect);

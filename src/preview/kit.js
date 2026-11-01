@@ -160,28 +160,64 @@ export class Kit {
     return host;
   }
 
-  /** The Extrude feature dialog. */
-  extrudeDialog(host, width, height, state, top = 322) {
-    const t = this.t, ox = 972, oy = 323 - (top - 322);
-    // Rows are positioned in reference coordinates; `oy` shifts them with the dialog.
-    host.append(this.iconAt('extrude', 24, 995 - ox, 345 - oy), textAt('Extrude', 1016 - ox, 345 - oy, 'pv-semibold pv-fs17'), svg(14, 14, `<path d="M2 2l10 10M12 2L2 12" stroke="${t.c('text_dim')}" stroke-width="1.5"/>`, `left:${px(1238 - ox)};top:${px(338 - oy)}`));
+  /**
+   * A feature dialog: header band with icon, title and close (the drag handle), a body the caller
+   * fills in dialog-local coordinates, and a footer band. Returns the card.
+   */
+  dialog({ title, icon, rect: r, label }) {
+    const headH = 47, footH = 54;
+    const host = tag(card('window', r), label, ['dialog_body', 'dialog_border', 'dialog_bg', 'dialog_footer', 'dialog_rule']);
+    host.classList.add('pv-dialog');
+    host.append(abs('pv-dhead', rect(0, 0, r.w - 2, headH)), abs('pv-dfoot', rect(0, r.h - 2 - footH, r.w - 2, footH)));
+    const grip = abs('pv-drag', rect(0, 0, r.w - 2, headH)); grip.dataset.drag = '1';
+    host.append(this.iconAt(icon, 24, 24, 23), textAt(title, 45, 23, 'pv-semibold pv-fs17'), this.closeX(r.w - 23, 23), grip);
+    host.append(abs('pv-rule full', rect(0, headH - 1, r.w - 2, 1)), abs('pv-rule full', rect(0, r.h - 2 - footH, r.w - 2, 1)));
+    return host;
+  }
+
+  closeX(cx, cy) {
+    return svg(14, 14, `<path d="M2 2l10 10M12 2L2 12" stroke="${this.t.c('text')}" stroke-width="1.4" stroke-linecap="round"/>`, `left:${px(cx - 7)};top:${px(cy - 7)}`);
+  }
+
+  /** A label and its control on one form row: the label is vertically centred on the control. */
+  formRow(host, text, y, control, { labelX = 14, controlX = 103, controlW = 180, h = 30 } = {}) {
+    host.append(textAt(text, labelX, y + h / 2, 'pv-fs15'));
+    host.append(control(rect(controlX, y, controlW, h)));
+  }
+
+  /** A text or number field. `mono` uses the monospace face the kit uses for numbers. */
+  textField(value, r, { mono = false, focus = false, label = value } = {}) {
+    const node = tag(abs(`pv-field${focus ? ' focus' : ''}`, r), label, ['field', 'control_fill', 'form_ink', 'control_border']);
+    node.append(textAt(value, 10, r.h / 2, `pv-fs14${mono ? ' pv-mono' : ''}`));
+    return node;
+  }
+
+  /** A drop-down showing `value`. */
+  select(value, r, label = value) {
+    const node = this.textField(value, r, { label });
+    node.append(this.chevron(r.w - 14, r.h / 2));
+    return node;
+  }
+
+  /** A collapsible section's header: chevron, caption and a rule to the right edge. */
+  sectionHeader(host, text, y, open, width) {
+    host.append(this.chevron(19, y, open ? 'down' : 'right'), textAt(text, 31, y, 'pv-semibold pv-fs13 dim sec'));
+    const left = 31 + text.length * 8.1 + 13;
+    host.append(abs('pv-rule', rect(left, y, width - 16 - left, 1)));
+  }
+
+  /** The Extrude feature dialog, in its own coordinates. */
+  extrudeDialog(r, state) {
+    const host = this.dialog({ title: 'Extrude', icon: 'extrude', rect: r, label: 'Extrude dialog' });
     const rows = [['Profiles', 'Select'], ['Direction', state.form.direction], ['Extent Type', state.form.extent], ['Distance', '10 mm'], ['Operation', state.form.operation]];
     rows.forEach(([label, value], i) => {
-      const top = 389 + i * 38 - oy;
-      host.append(textAt(label, 985 - ox, top + 14, 'pv-fs15'));
-      const f = tag(abs(`pv-field${i === 0 ? ' focus' : ''}`, rect(1077 - ox, top, 176, 28)), label, ['field', 'control_fill', 'form_ink', 'control_border']);
-      f.append(textAt(value, 8, 14, 'pv-fs15'));
-      if (i === 1 || i === 2 || i === 4) f.append(this.chevron(176 - 12, 14));
-      host.append(f);
+      this.formRow(host, label, 66 + i * 38, field => (i === 0 ? this.textField(value, field, { focus: true, label }) : i === 3 ? this.textField(value, field, { mono: true, label }) : this.select(value, field, label)));
     });
-    const section = (label, y, open) => {
-      host.append(this.chevron(992 - ox, y - oy, open ? 'down' : 'right'), textAt(label, 1003 - ox, y - oy, 'pv-semibold pv-fs13 dim sec'), abs('pv-rule', rect(1003 - ox + label.length * 8.6 + 8, y - oy, 1255 - (1003 + label.length * 8.6 + 8), 1)));
-    };
-    section('OPTIONS', 594, true);
-    host.append(this.checkbox('Thin Extrude', rect(985 - ox, 622 - oy, 130, 20), false), this.checkbox('Reverse Direction', rect(1125 - ox, 622 - oy, 150, 20), false));
-    section('ADVANCED', 671, false);
-    host.append(abs('pv-rule full', rect(0, 707 - oy, width, 1)));
-    host.append(this.button('Cancel', rect(1095 - ox, 718 - oy, 72, 30)), this.button('OK', rect(1173 - ox, 718 - oy, 80, 30), { primary: true, disabled: true }));
+    this.sectionHeader(host, 'OPTIONS', 272, true, r.w - 2);
+    host.append(this.checkbox('Thin Extrude', rect(14, 299, 130, 20), false), this.checkbox('Reverse Direction', rect(154, 299, 150, 20), false));
+    this.sectionHeader(host, 'ADVANCED', 349, false, r.w - 2);
+    host.append(this.button('Cancel', rect(124, 396, 72, 30)), this.button('OK', rect(202, 396, 80, 30), { primary: true, disabled: true }));
+    return host;
   }
 
   /** The History strip. */
@@ -213,13 +249,13 @@ export class Kit {
 
   button(text, r, { primary = false, disabled = false } = {}) {
     const node = tag(abs(`pv-btn${primary ? ' primary' : ''}${disabled ? ' disabled' : ''}`, r), text, ['control_fill', 'control_border', 'form_primary_fill']);
-    node.append(textAt(text, r.w / 2, r.h / 2, 'pv-fs15', 'center'));
+    node.append(textAt(text, r.w / 2, r.h / 2, 'pv-fs14', 'center'));
     return node;
   }
 
   checkbox(text, r, checked) {
     const node = tag(abs('pv-check', r), text, ['control_fill', 'control_border', 'form_primary_fill']);
-    node.append(el('span', { class: `pv-box${checked ? ' on' : ''}`, style: `top:${px(r.h / 2 - 8)}` }), textAt(text, 24, r.h / 2, 'pv-fs15'));
+    node.append(el('span', { class: `pv-box${checked ? ' on' : ''}`, style: `top:${px(r.h / 2 - 8)}` }), textAt(text, 23, r.h / 2, 'pv-fs14'));
     return node;
   }
 }

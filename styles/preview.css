@@ -2,7 +2,7 @@
    --c-* (colours) and --m-* (metrics, in px) on .pv-root; nothing here picks a theme colour. */
 .pv-root{position:absolute;inset:0;overflow:hidden;font-family:Plex,system-ui,sans-serif;font-size:var(--m-font-body);line-height:1.2;color:var(--c-text);background:var(--c-viewport-bottom);user-select:none;-webkit-user-select:none;outline:0}
 .pv-root::before{content:"";position:absolute;inset:0;background:linear-gradient(var(--c-viewport-top),var(--c-viewport-bottom))}
-.pv-window{position:absolute;left:0;top:0;overflow:hidden}
+.pv-scene{position:absolute;left:0;top:0;overflow:hidden}
 .pv-part{position:absolute;left:0;top:0;pointer-events:none}
 .pv-pending{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;color:var(--c-text-dim);font-size:14px}
 .pv-abs{position:absolute}
@@ -68,7 +68,7 @@
 .pv-ref{position:absolute;left:0;top:0;width:1291px;height:858px;pointer-events:none;z-index:50}
 .pv-root[data-refview=diff] .pv-ref{mix-blend-mode:difference}
 .pv-root[data-refview=html] .pv-ref{display:none}
-.pv-root[data-refview=ref] .pv-window>:not(.pv-ref){visibility:hidden}
+.pv-root[data-refview=ref] .pv-scene>:not(.pv-ref){visibility:hidden}
 
 /* ---- Measured type sizes (the real window's text is larger than the codec's font tokens) ---- */
 .pv-fs13{font-size:13px}.pv-fs14{font-size:14px}.pv-fs15{font-size:15px}.pv-fs17{font-size:17px}
@@ -114,3 +114,14 @@
 
 /* Selected commands carry a faint accent outline, not the full accent. */
 .pv-tool.on,.pv-chip.on{box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--c-tab) 40%,transparent)}
+
+/* ---- Feature dialog ---- */
+.pv-dhead{position:absolute;background:var(--c-dialog-bg)}
+.pv-dfoot{position:absolute;background:var(--c-dialog-footer)}
+.pv-drag{position:absolute;cursor:grab;z-index:2}
+.pv-dialog.dragging .pv-drag{cursor:grabbing}
+.pv-dialog.dragging{box-shadow:0 8px 24px var(--shadow)}
+.pv-field{background:var(--c-field)}
+.pv-mono{font-family:'Plex Mono',ui-monospace,monospace}
+.pv-btn{background:var(--c-control-fill)}
+.pv-dialog .pv-t{font-size:14px}.pv-dialog .pv-semibold.pv-fs17{font-size:17px}.pv-dialog .sec{font-size:13px;font-weight:700;letter-spacing:.07em}
