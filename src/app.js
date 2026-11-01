@@ -162,6 +162,12 @@ for (const tab of document.querySelectorAll('[data-section]')) {
   document.querySelectorAll('[data-section]').forEach(button => { button.setAttribute('aria-selected', button === tab); button.tabIndex = button === tab ? 0 : -1; });
   $('#editor').setAttribute('aria-labelledby', tab.id);
   editor.show(tab.dataset.section);
+  $('#editor').scrollTop = 0;
+  if (matchMedia('(max-width:800px)').matches) {
+    const heading = $('#editor .section-heading') || $('#editor');
+    const offset = $('.preview-shell').getBoundingClientRect().height + $('.editor-navigation').getBoundingClientRect().height + 12;
+    window.scrollTo({ top: Math.max(0, window.scrollY + heading.getBoundingClientRect().top - offset), behavior: 'instant' });
+  }
   if (categoryScene[tab.dataset.section]) applyView({ focusScene: categoryScene[tab.dataset.section] }).catch(error => notify(error.message));
   $('#editor-title')?.focus({ preventScroll: true });
   });
@@ -169,7 +175,7 @@ for (const tab of document.querySelectorAll('[data-section]')) {
 for (const tab of document.querySelectorAll('[data-section]')) tab.addEventListener('keydown', event => {
   const tabs = [...document.querySelectorAll('[data-section]')], index = tabs.indexOf(tab);
   const next = event.key === 'ArrowRight' ? tabs[(index + 1) % tabs.length] : event.key === 'ArrowLeft' ? tabs[(index - 1 + tabs.length) % tabs.length] : event.key === 'Home' ? tabs[0] : event.key === 'End' ? tabs.at(-1) : null;
-  if (next) { event.preventDefault(); next.click(); next.focus(); }
+  if (next) { event.preventDefault(); next.click(); next.focus({ preventScroll: true }); }
 });
 $('#undo-button').addEventListener('click', () => store.undo()); $('#redo-button').addEventListener('click', () => store.redo());
 document.addEventListener('keydown', event => {
