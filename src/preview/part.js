@@ -13,16 +13,17 @@ const NS = 'http://www.w3.org/2000/svg';
 const S2 = Math.SQRT2, S6 = Math.sqrt(6), S3 = Math.sqrt(3);
 const TARGET = { x: 40, y: 25, z: 11 }; // the camera target: the part's bounding-box centre
 const HALF_HEIGHT = 55.4;               // half the visible height in world units after the home fit
-const LIGHT = [0.06, -0.26, 0.96];      // light direction in world space (top 1.10, -y wall .75, +x wall .65)
+const LIGHT = [0.14, -0.48, 0.87];      // light direction in world space (top .93, -y wall .74, +x wall .57)
 const BACK = [1 / S3, -1 / S3, 1 / S3]; // the direction from the part to the eye
 
 const parse = hex => { const v = hex.replace('#', ''); return [parseInt(v.slice(0, 2), 16), parseInt(v.slice(2, 4), 16), parseInt(v.slice(4, 6), 16), v.length >= 8 ? parseInt(v.slice(6, 8), 16) / 255 : 1]; };
 const rgb = (c, f = 1, a = c[3]) => `rgba(${Math.min(255, Math.round(c[0] * f))},${Math.min(255, Math.round(c[1] * f))},${Math.min(255, Math.round(c[2] * f))},${a})`;
 const facing = n => n[0] * BACK[0] + n[1] * BACK[1] + n[2] * BACK[2] > 1e-6;
-const light = n => 0.62 + 0.5 * Math.max(0, n[0] * LIGHT[0] + n[1] * LIGHT[1] + n[2] * LIGHT[2]);
+const light = n => 0.5 + 0.5 * Math.max(0, n[0] * LIGHT[0] + n[1] * LIGHT[1] + n[2] * LIGHT[2]);
 
 export function part(tokens, width, height, pan = { x: 0, y: 0 }) {
-  const t = tokens, body = parse(t.c('body')), edge = t.c('body_edge');
+  const t = tokens, body = parse(t.c('body'));
+  const edge = 'none'; // the Shaded visual style draws no edge lines (Shaded with edges would use body_edge)
   const svg = document.createElementNS(NS, 'svg');
   svg.setAttribute('class', 'pv-part');
   svg.setAttribute('width', width); svg.setAttribute('height', height);
@@ -51,14 +52,14 @@ export function part(tokens, width, height, pan = { x: 0, y: 0 }) {
       for (const along of ['x', 'y']) {
         const a = along === 'x' ? [o, -400, 0] : [-400, o, 0], b = along === 'x' ? [o, 400, 0] : [400, o, 0];
         const d = Math.hypot(along === 'x' ? o - TARGET.x : o - TARGET.y, 0);
-        const fade = Math.max(0.12, 1 - d / 230);
+        const fade = Math.max(0.2, 1 - d / 260);
         const pa = P(...a), pb = P(...b);
-        line(pa, pb, rgb(parse(color), 1, parse(color)[3] * fade * (major ? 1 : 0.3)), w);
+        line(pa, pb, rgb(parse(color), 1, parse(color)[3] * fade * (major ? 0.115 : 0.02)), w);
       }
     }
   };
-  gridLines(5, t.c('grid'), 0.8, false);
-  gridLines(25, t.c('grid_major'), 1.2, true);
+  gridLines(5, t.c('text'), 1, false);
+  gridLines(25, t.c('text'), 1.5, true);
 
   // The X and Y axes lie on the plate's bottom edges; the plate hides most of them.
   const O = P(0, 0, 0);
