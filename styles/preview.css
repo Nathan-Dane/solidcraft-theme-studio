@@ -79,7 +79,7 @@
 .pv-card.pv-window{--r:var(--m-radius-xl)}
 .pv-card.pv-chrome::after,.pv-card.pv-panel::after,.pv-card.pv-window::after{content:"";position:absolute;inset:var(--inset-gap,0px);box-sizing:border-box;border:var(--inset-width,0px) solid var(--inset-color,transparent);border-radius:max(calc(var(--r) - var(--border-width) - var(--inset-gap,0px)),0px);pointer-events:none}
 .pv-card.pv-nav{--r:10px}
-.pv-accent-bar{background:var(--c-tab);border-radius:0 0 3px 3px}
+.pv-accent-bar{position:absolute;background:var(--c-tab);border-radius:2px}
 .pv-card>.pv-abs,.pv-card .pv-t,.pv-card .ic{z-index:1}
 
 /* ---- App bar ---- */
