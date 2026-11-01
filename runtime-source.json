@@ -1,0 +1,7 @@
+{
+  "repository": "https://github.com/Nathan-Dane/solidcraft.git",
+  "commit": "80a4ad18d78e8beba9c596756c6a7b06e600595d",
+  "package": "solidcraft-theme-studio",
+  "workspaceApp": "apps/theme-studio",
+  "note": "Reviewed native runtime integration for the standalone Theme Studio, including Onyx and continuous brightness."
+}

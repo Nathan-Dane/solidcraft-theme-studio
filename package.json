@@ -1,0 +1,14 @@
+{
+  "name": "solidcraft-theme-studio",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "A static authoring workbench using SolidCraft's real Rust theme engine and UI previews.",
+  "license": "MIT OR Apache-2.0",
+  "engines": { "node": ">=20" },
+  "scripts": {
+    "test": "node tests/onyx-roundtrip.mjs",
+    "test:onyx": "node tests/onyx-roundtrip.mjs",
+    "package": "node scripts/package-site.mjs"
+  }
+}
