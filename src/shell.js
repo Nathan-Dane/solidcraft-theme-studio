@@ -35,6 +35,7 @@ applyDock();
 const select = $('#scene-select');
 const tabs = [...document.querySelectorAll('[data-scene]')];
 function syncScenes() {
+  $('.stage-wrap').dataset.activeScene = select.value;
   for (const tab of tabs) {
     tab.setAttribute('aria-pressed', tab.dataset.scene === select.value);
     tab.disabled = select.disabled;
