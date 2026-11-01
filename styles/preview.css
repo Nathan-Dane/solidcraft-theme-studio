@@ -116,12 +116,18 @@
 .pv-tool.on,.pv-chip.on{box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--c-tab) 40%,transparent)}
 
 /* ---- Feature dialog ---- */
-.pv-dhead{position:absolute;background:var(--c-dialog-bg)}
+.pv-dhead{position:absolute}
 .pv-dfoot{position:absolute;background:var(--c-dialog-footer)}
 .pv-drag{position:absolute;cursor:grab;z-index:2}
 .pv-dialog.dragging .pv-drag{cursor:grabbing}
 .pv-dialog.dragging{box-shadow:0 8px 24px var(--shadow)}
-.pv-field{background:var(--c-field)}
+.pv-field{background:var(--c-control-fill)}
+/* Ribbon search is an egui text edit: it uses the field token. */
+.pv-field.pv-search{background:var(--c-field)}
 .pv-mono{font-family:'Plex Mono',ui-monospace,monospace}
 .pv-btn{background:var(--c-control-fill)}
 .pv-dialog .pv-t{font-size:14px}.pv-dialog .pv-semibold.pv-fs17{font-size:17px}.pv-dialog .sec{font-size:13px;font-weight:700;letter-spacing:.07em}
+
+/* A disabled primary button is muted into the control surface, not just faded. */
+.pv-btn.primary.disabled{background:color-mix(in srgb,var(--c-form-primary-fill) 14%,var(--c-control-fill));border-color:var(--c-control-border);opacity:1}
+.pv-btn.primary.disabled .pv-t{color:var(--c-text-dim)}
