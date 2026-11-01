@@ -85,7 +85,7 @@ export class Kit {
     bar.append(this.iconAt('home', 20, 135, cy, { ink }), abs('pv-vrule', rect(158, 7, 1, 24)), textAt('File', 175, cy, 'bar pv-fs15'));
     [229, 267, 305].forEach((x, i) => bar.append(this.iconAt(['save', 'undo', 'redo'][i], 20, x, cy, { ink })));
     const tab = abs('pv-bartab', rect(347, 4, 133, 27));
-    tab.append(textAt('Sample Plate', 9, 13.5, 'pv-semibold bar pv-fs15'), this.iconAt('close', 12, 117, 13.5, { ink }));
+    tab.append(textAt(state.title || 'Sample Plate', 9, 13.5, 'pv-semibold bar pv-fs15'), this.iconAt('close', 12, 117, 13.5, { ink }));
     bar.append(tab, this.iconAt('plus', 16, 499, cy, { ink }));
     const rx = r.w - 1276;
     [822, 861, 900].forEach((x, i) => bar.append(this.iconAt(['bug_report', 'settings', 'help'][i], 20, x + rx, cy, { ink })));
@@ -166,26 +166,30 @@ export class Kit {
    * with the border line, three hollow dimmed negative rings drawn first, the origin dot, then the
    * three positive axis discs with bold letters, and the home chip. Colours are the theme tokens.
    */
-  navCube(r) {
+  navCube(r, view = 'iso') {
     const t = this.t, rgba = (hex, k) => { const v = hex.replace('#', ''); return `rgba(${parseInt(v.slice(0, 2), 16)},${parseInt(v.slice(2, 4), 16)},${parseInt(v.slice(4, 6), 16)},${((v.length >= 8 ? parseInt(v.slice(6, 8), 16) : 255) / 255) * k})`; };
     const c = [r.x + r.w / 2, r.y + r.h / 2 - 4], R = 57;
     // Tip offsets in the default isometric view, with the artwork scaled to 84% of the axis length.
-    const tips = [
+    const tips = view === 'top' ? [
+      ['-x', -37, 1.5, 'axis_x', false], ['-y', 0, 37.5, 'axis_y', false], ['-z', 0, 1.5, 'axis_z', null],
+      ['x', 35.5, 1.5, 'axis_x', true], ['y', 0, -34.5, 'axis_y', true], ['z', 0, 1.5, 'axis_z', true]
+    ] : [
       ['-x', -25.3, -13.3, 'axis_x', false], ['-y', -25.3, 16, 'axis_y', false], ['-z', 0.3, 30.7, 'axis_z', false],
       ['x', 26.3, 16, 'axis_x', true], ['y', 26.3, -13.5, 'axis_y', true], ['z', 0.3, -29.3, 'axis_z', true]
     ];
     let m = `<circle cx="${c[0]}" cy="${c[1]}" r="${R}" fill="${rgba(t.c('overlay'), 0.35)}" stroke="${rgba(t.c('border'), 0.55)}" stroke-width="1"/>`;
     tips.forEach(([name, dx, dy, key, positive], i) => {
+      if (positive === null) return; // hidden behind the view plane
       if (i === 3) m += `<circle cx="${c[0]}" cy="${c[1]}" r="3.4" fill="${rgba(t.c('text'), 0.9)}" stroke="${t.c('panel')}" stroke-width="1.2"/>`;
       const col = t.c(key), ink = positive ? col : rgba(col, 0.55);
-      const at = [c[0] + dx, c[1] + dy], len = Math.hypot(dx, dy), radius = positive ? 12.7 : 6.3;
+      const at = [c[0] + dx, c[1] + dy], len = Math.hypot(dx, dy) || 1, radius = positive ? 12.7 : 6.3;
       const end = [at[0] - (dx / len) * (positive ? radius : radius + 1.4), at[1] - (dy / len) * (positive ? radius : radius + 1.4)];
       m += `<line x1="${c[0]}" y1="${c[1]}" x2="${end[0]}" y2="${end[1]}" stroke="${ink}" stroke-width="3.4"/><circle cx="${c[0]}" cy="${c[1]}" r="1.7" fill="${ink}"/>`;
       m += positive
         ? `<circle cx="${at[0]}" cy="${at[1]}" r="12.7" fill="${col}"/><text x="${at[0]}" y="${at[1]}" text-anchor="middle" dominant-baseline="central" font-family="Plex,system-ui,sans-serif" font-size="12.5" font-weight="700" fill="${t.c('on_accent')}">${name.toUpperCase()}</text>`
         : `<circle cx="${at[0]}" cy="${at[1]}" r="6.3" fill="none" stroke="${ink}" stroke-width="2.4"/>`;
     });
-    const home = [c[0] - 37.7, c[1] - 41];
+    const home = view === 'top' ? [c[0] - 43, c[1] - 40.5] : [c[0] - 37.7, c[1] - 41];
     m += `<circle cx="${home[0]}" cy="${home[1]}" r="11.2" fill="${rgba(t.c('overlay'), 0.5)}" stroke="${t.c('border')}" stroke-width="1"/>`;
     const node = svg(r.w, r.h, '', `left:${px(r.x)};top:${px(r.y)};overflow:visible`);
     node.setAttribute('viewBox', `${r.x} ${r.y} ${r.w} ${r.h}`); node.innerHTML = m;
@@ -276,10 +280,14 @@ export class Kit {
       host.append(abs('pv-transport', rect(cx - 14, cy - 14, 28, 28), this.transport(name)));
     });
     items.forEach((icon, i) => {
-      const cx = 282 + i * 36.5 - ox;
-      host.append(this.historyChip(icon, rect(cx - 17, cy - 18, 35, 36), i === state.history));
+      const cx = 282 + i * 36.5 + (state.editing && i > 0 ? 18.5 : 0) - ox;
+      const chip = this.historyChip(icon, rect(cx - 17, cy - 18, 35, 36), i === state.history);
+      if (state.editing && i === 0) chip.classList.add('editing');
+      host.append(chip);
     });
-    host.append(abs('pv-playhead', rect(602 - ox, cy - 16, 2, 34)));
+    if (state.editing) {
+      host.append(abs('pv-playhead accent', rect(309 - ox, cy - 16, 2, 28)), abs('pv-marker', rect(304 - ox, cy + 9, 12, 12)), abs('pv-dot-mark', rect(281 - ox - 2, cy + 18, 4, 4)));
+    } else host.append(abs('pv-playhead', rect(602 - ox, cy - 16, 2, 34)));
   }
 
   historyChip(name, r, selected) {

@@ -41,7 +41,8 @@ export class HtmlPreview {
   /** Development comparison against a screenshot of the real window: ?ref&view=diff|ref|html&crop=x,y,w,h */
   get dev() {
     const params = new URLSearchParams(location.search);
-    return params.has('ref') ? { ref: { src: new URL('../../mockups/real-app.webp', import.meta.url).href, w: 1291, h: 858 }, view: params.get('view') || 'diff', crop: params.get('crop')?.split(',').map(Number) } : null;
+    const sketch = this.scene === 'sketch';
+    return params.has('ref') ? { ref: sketch ? { src: new URL('../../mockups/real-sketch.png', import.meta.url).href, w: 1287, h: 859, x: 8, y: 0 } : { src: new URL('../../mockups/real-app.webp', import.meta.url).href, w: 1291, h: 858 }, view: params.get('view') || 'diff', crop: params.get('crop')?.split(',').map(Number) } : null;
   }
 
   async init(contract) { await loadIcons(contract.iconIndex); this.iconsReady = true; this.render(); }

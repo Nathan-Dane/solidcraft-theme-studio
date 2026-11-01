@@ -5,7 +5,7 @@
 import { el } from '../dom.js';
 import { abs, card, rect, tag, textAt } from './kit.js';
 import { part } from './part.js';
-import { sketchView } from './sketch.js';
+import { sketchScene, SKETCH_REFERENCE } from './sketch-scene.js';
 
 export const REFERENCE = { w: 1276, h: 848 };
 export const MIN_SIZE = { w: 1276, h: 848 };
@@ -31,11 +31,11 @@ const TREE = [
 ];
 
 /** Window size to lay out in and the transform that fits it to `stage`. */
-export function fit(stage, dev) {
+export function fit(stage, dev, reference = REFERENCE) {
   if (dev?.ref) {
-    const crop = dev.crop || [0, 0, REFERENCE.w, REFERENCE.h];
+    const crop = dev.crop || [0, 0, reference.w, reference.h];
     const zoom = Math.min(stage.w / crop[2], stage.h / crop[3]);
-    return { zoom, w: REFERENCE.w, h: REFERENCE.h, tx: -crop[0] * zoom, ty: -crop[1] * zoom };
+    return { zoom, w: reference.w, h: reference.h, tx: -crop[0] * zoom, ty: -crop[1] * zoom };
   }
   const zoom = Math.min(Math.max(Math.min(stage.w / MIN_SIZE.w, stage.h / MIN_SIZE.h), MIN_ZOOM), 1);
   return { zoom, w: stage.w / zoom, h: stage.h / zoom, tx: 0, ty: 0 };
@@ -43,10 +43,11 @@ export function fit(stage, dev) {
 
 export function appScene(kit, stage, state, dev, mode = 'app') {
   const t = kit.t;
+  if (mode === 'sketch') return sketchScene(kit, stage, state, dev, fit(stage, dev, SKETCH_REFERENCE));
   const { zoom, w: W, h: H, tx, ty } = fit(stage, dev);
   const root = el('div', { class: 'pv-scene' });
   root.style.cssText = `width:${W}px;height:${H}px;transform:translate(${tx}px,${ty}px) scale(${zoom});transform-origin:0 0`;
-  root.append(mode === 'sketch' ? sketchView(t, W, H, state.pan) : part(t, W, H, state.pan));
+  root.append(part(t, W, H, state.pan));
 
   root.append(kit.appBar(rect(0, 0, W, 38), state));
 
@@ -75,7 +76,7 @@ export function appScene(kit, stage, state, dev, mode = 'app') {
   const dialogSize = { w: 298, h: 438 }, drag = state.dialog;
   const anchor = { x: W - M - dialogSize.w, y: compass.y + compass.h + M };
   const dialogX = Math.min(Math.max(anchor.x + drag.dx, 0), W - dialogSize.w), dialogY = Math.min(Math.max(anchor.y + drag.dy, 0), H - 60);
-  if (mode !== 'sketch') root.append(kit.extrudeDialog(rect(dialogX, dialogY, dialogSize.w, dialogSize.h), state));
+  root.append(kit.extrudeDialog(rect(dialogX, dialogY, dialogSize.w, dialogSize.h), state));
 
   const historyRect = rect(M, H - M - 44, W - 2 * M, 44);
   const strip = card('panel', historyRect);
