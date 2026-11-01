@@ -6,6 +6,7 @@ import { Icons, loadIcons } from './icons.js';
 import { Kit } from './kit.js';
 import { appScene } from './app-scene.js';
 import { appearanceScene } from './appearance-scene.js';
+import { OVERSCAN } from './part.js';
 import { scenes } from './scenes.js';
 
 const hex = value => value;
@@ -97,13 +98,25 @@ export class HtmlPreview {
     const win = this.root.querySelector('.pv-scene'), world = svg.querySelector('.pv-world');
     const zoom = win.getBoundingClientRect().width / win.offsetWidth;
     const start = { x: event.clientX, y: event.clientY, px: this.state.pan.x, py: this.state.pan.y };
+    let dx = 0, dy = 0, frame = 0;
     svg.setPointerCapture(event.pointerId);
     svg.classList.add('panning');
+    // Moving the layer is a compositor transform: nothing repaints while dragging, one frame at a time.
+    const paint = () => { frame = 0; svg.style.transform = `translate3d(${dx}px,${dy}px,0)`; };
     const move = e => {
-      this.state.pan = { x: start.px + (e.clientX - start.x) / zoom, y: start.py + (e.clientY - start.y) / zoom };
-      world.setAttribute('transform', `translate(${this.state.pan.x} ${this.state.pan.y})`);
+      dx = Math.max(-OVERSCAN, Math.min(OVERSCAN, (e.clientX - start.x) / zoom));
+      dy = Math.max(-OVERSCAN, Math.min(OVERSCAN, (e.clientY - start.y) / zoom));
+      if (!frame) frame = requestAnimationFrame(paint);
     };
-    const end = () => { svg.removeEventListener('pointermove', move); svg.removeEventListener('pointerup', end); svg.removeEventListener('pointercancel', end); svg.classList.remove('panning'); };
+    const end = () => {
+      svg.removeEventListener('pointermove', move); svg.removeEventListener('pointerup', end); svg.removeEventListener('pointercancel', end);
+      cancelAnimationFrame(frame);
+      // Commit the offset into the drawing and drop the temporary transform in the same frame.
+      this.state.pan = { x: start.px + dx, y: start.py + dy };
+      world.setAttribute('transform', `translate(${this.state.pan.x} ${this.state.pan.y})`);
+      svg.style.transform = '';
+      svg.classList.remove('panning');
+    };
     svg.addEventListener('pointermove', move); svg.addEventListener('pointerup', end); svg.addEventListener('pointercancel', end);
     event.preventDefault();
     return true;

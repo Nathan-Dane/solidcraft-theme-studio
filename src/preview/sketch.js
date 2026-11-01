@@ -7,11 +7,13 @@ const NS = 'http://www.w3.org/2000/svg';
 // The plate's origin and scale in the 1276 x 854 reference window (measured from the app).
 const ORIGIN = { x: 315 / 1288, y: 646 / 854 }, SCALE = 6.85 / 854;
 
+import { overscan, OVERSCAN } from './part.js';
+
 export function sketchView(tokens, width, height, pan = { x: 0, y: 0 }) {
   const t = tokens;
   const svg = document.createElementNS(NS, 'svg');
   svg.setAttribute('class', 'pv-part');
-  svg.setAttribute('width', width); svg.setAttribute('height', height);
+  overscan(svg, width, height);
   svg.dataset.label = 'Viewport (sketch)'; svg.dataset.roles = 'grid,grid_major,sketch_fixed,profile_fill,sketch_point,sketch_point_free,sketch_construction,dimension,sketch_conflict,viewport_bottom';
   const world = document.createElementNS(NS, 'g');
   world.setAttribute('class', 'pv-world'); world.setAttribute('transform', `translate(${pan.x} ${pan.y})`);
@@ -27,10 +29,10 @@ export function sketchView(tokens, width, height, pan = { x: 0, y: 0 }) {
   let m = '';
 
   // The grid fills the window: minor every 5 mm, major every 25 mm, aligned to the sketch origin.
-  const lo = Math.floor((-oy + height) / s / 5) * 5 - 5, hi = Math.ceil(oy / s / 5) * 5 + 5;
-  const left = Math.floor(-ox / s / 5) * 5 - 5, right = Math.ceil((width - ox) / s / 5) * 5 + 5;
-  for (let i = left; i <= right; i += 5) { const major = i % 25 === 0; m += px([X(i), 0], [X(i), height], major ? t.c('grid_major') : t.c('grid'), major ? 1.5 : 1); }
-  for (let i = lo; i <= hi; i += 5) { const major = i % 25 === 0; m += px([0, Y(i)], [width, Y(i)], major ? t.c('grid_major') : t.c('grid'), major ? 1.5 : 1); }
+  const lo = Math.floor((-oy + height - OVERSCAN) / s / 5) * 5 - 5, hi = Math.ceil((oy + OVERSCAN) / s / 5) * 5 + 5;
+  const left = Math.floor((-ox - OVERSCAN) / s / 5) * 5 - 5, right = Math.ceil((width - ox + OVERSCAN) / s / 5) * 5 + 5;
+  for (let i = left; i <= right; i += 5) { const major = i % 25 === 0; m += px([X(i), -OVERSCAN], [X(i), height + OVERSCAN], major ? t.c('grid_major') : t.c('grid'), major ? 1.5 : 1); }
+  for (let i = lo; i <= hi; i += 5) { const major = i % 25 === 0; m += px([-OVERSCAN, Y(i)], [width + OVERSCAN, Y(i)], major ? t.c('grid_major') : t.c('grid'), major ? 1.5 : 1); }
 
   // Profile: fill and a hovered 9 mm corner region, then the outline.
   m += `<rect x="${n(X(0))}" y="${n(Y(50))}" width="${n(80 * s)}" height="${n(50 * s)}" fill="${t.c('profile_fill')}"/>`;

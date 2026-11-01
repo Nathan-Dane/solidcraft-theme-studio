@@ -140,7 +140,7 @@
 .pv-keycap{position:absolute;border-radius:5px;background:var(--c-field)}
 
 /* The viewport pans with click and drag. */
-.pv-part{pointer-events:auto;cursor:grab;touch-action:none}
+.pv-part{pointer-events:auto;cursor:grab;touch-action:none;will-change:transform}
 .pv-part.panning{cursor:grabbing}
 
 /* ---- Component scenes ---- */

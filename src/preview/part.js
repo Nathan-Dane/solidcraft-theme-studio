@@ -21,12 +21,24 @@ const rgb = (c, f = 1, a = c[3]) => `rgba(${Math.min(255, Math.round(c[0] * f))}
 const facing = n => n[0] * BACK[0] + n[1] * BACK[1] + n[2] * BACK[2] > 1e-6;
 const light = n => 0.5 + 0.5 * Math.max(0, n[0] * LIGHT[0] + n[1] * LIGHT[1] + n[2] * LIGHT[2]);
 
+/**
+ * The viewport SVG is drawn OVERSCAN px larger on every side. Panning then moves the whole layer with a
+ * compositor transform (no repaint, so the blur of the panels above it is recomputed on the GPU only),
+ * and the strip it reveals is already drawn.
+ */
+export const OVERSCAN = 320;
+export function overscan(svg, width, height) {
+  svg.setAttribute('width', width + 2 * OVERSCAN); svg.setAttribute('height', height + 2 * OVERSCAN);
+  svg.setAttribute('viewBox', `${-OVERSCAN} ${-OVERSCAN} ${width + 2 * OVERSCAN} ${height + 2 * OVERSCAN}`);
+  svg.style.left = svg.style.top = `${-OVERSCAN}px`;
+}
+
 export function part(tokens, width, height, pan = { x: 0, y: 0 }) {
   const t = tokens, body = parse(t.c('body'));
   const edge = 'none'; // the Shaded visual style draws no edge lines (Shaded with edges would use body_edge)
   const svg = document.createElementNS(NS, 'svg');
   svg.setAttribute('class', 'pv-part');
-  svg.setAttribute('width', width); svg.setAttribute('height', height);
+  overscan(svg, width, height);
   svg.dataset.label = 'Viewport (analytic part)'; svg.dataset.roles = 'body,body_edge,grid,grid_major,axis_x,axis_y,axis_z,viewport_top,viewport_bottom';
   const world = document.createElementNS(NS, 'g');
   world.setAttribute('class', 'pv-world'); world.setAttribute('transform', `translate(${pan.x} ${pan.y})`);
