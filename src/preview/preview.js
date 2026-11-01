@@ -50,6 +50,8 @@ export class HtmlPreview {
   update(result, state) {
     const changed = this.tokens.update(result);
     this.state.tab = state.workspace;
+    this.state.options = result?.definitions || result?.theme_option_defs || result?.theme?.options || [];
+    this.state.optionValues = { ...(result?.effectiveValues || result?.effective_values || result?.theme_option_values || {}), ...(state.preview || {}) };
     if (changed || this.dirtyTab !== state.workspace) { this.dirtyTab = state.workspace; this.render(); }
     return changed;
   }

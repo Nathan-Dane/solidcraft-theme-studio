@@ -142,3 +142,21 @@
 /* The viewport pans with click and drag. */
 .pv-part{pointer-events:auto;cursor:grab;touch-action:none}
 .pv-part.panning{cursor:grabbing}
+
+/* ---- Component scenes ---- */
+.pv-root[data-scene]:not([data-scene=app]){overflow-y:auto;overflow-x:hidden;scrollbar-width:thin}
+.pv-board{position:relative;width:100%}
+.pv-slider{position:absolute}.pv-slider .pv-track{position:absolute;background:var(--c-dialog-rule);border-radius:2px}
+.pv-slider .pv-fill{position:absolute;background:var(--c-form-primary);border-radius:2px}
+.pv-slider .pv-thumb{position:absolute;box-sizing:border-box;border-radius:50%;background:var(--c-control-fill);border:2px solid var(--c-form-primary)}
+.pv-slider.disabled{opacity:.4}
+.pv-seg{position:absolute;display:block;border:1px solid var(--c-control-border);border-radius:6px;background:var(--c-control-fill);overflow:hidden}
+.pv-segment{position:absolute;color:var(--c-text-dim)}.pv-segment.on{background:var(--c-selected-bg);color:var(--c-selected-ink)}.pv-segment.on .pv-t{color:var(--c-selected-ink)}
+.pv-toggle{position:absolute;box-sizing:border-box;border-radius:9px;background:var(--c-control-fill);border:1px solid var(--c-control-border)}
+.pv-toggle.on{background:var(--c-form-primary-fill);border-color:var(--c-form-primary-fill)}
+.pv-toggle .pv-knob{position:absolute;border-radius:50%;background:var(--c-text)}.pv-toggle.disabled{opacity:.4}
+.pv-bar{position:absolute;border-radius:var(--m-radius-sm)}
+.pv-card.pv-popup{background:var(--c-dialog-body);border:1px solid var(--c-dialog-border);border-radius:8px;box-shadow:0 4px 14px var(--shadow)}
+.pv-mitem{position:absolute;border-radius:5px}.pv-mitem.on,.pv-mitem:hover{background:var(--c-selected-bg)}
+.pv-filecard{position:absolute;border-radius:10px;background:var(--c-file-surface,var(--c-panel));border:1px solid var(--c-file-primary-border,var(--c-border))}
+.pv-pending{position:static}
