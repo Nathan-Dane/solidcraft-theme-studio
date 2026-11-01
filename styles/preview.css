@@ -131,3 +131,7 @@
 /* A disabled primary button is muted into the control surface, not just faded. */
 .pv-btn.primary.disabled{background:color-mix(in srgb,var(--c-form-primary-fill) 14%,var(--c-control-fill));border-color:var(--c-control-border);opacity:1}
 .pv-btn.primary.disabled .pv-t{color:var(--c-text-dim)}
+
+/* Text followed by the chevron icon. */
+.pv-lc{position:absolute;display:inline-flex;align-items:center;gap:2px;white-space:nowrap}
+.pv-lc .ic{margin-top:1px}

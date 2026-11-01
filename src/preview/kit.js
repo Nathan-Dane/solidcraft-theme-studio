@@ -52,9 +52,30 @@ export class Kit {
     return node;
   }
 
-  chevron(cx, cy, dir = 'down', color = 'var(--c-text-dim)') {
-    const node = el('span', { class: `pv-chev ${dir}` });
-    node.style.cssText = `left:${px(cx - 3)};top:${px(cy - 3)};border-color:${color}`;
+  /** The kit's chevron icon centred at (cx, cy); the artwork points down, so right and up rotate it. */
+  chevron(cx, cy, dir = 'down', color = null) {
+    const node = this.icons.el('chevron', 16, { ink: color || this.t.c('text_dim') });
+    node.style.cssText += `;position:absolute;left:${px(cx - 8)};top:${px(cy - 8)};transform:rotate(${{ down: 0, right: -90, up: 180, left: 90 }[dir] ?? 0}deg)`;
+    return node;
+  }
+
+  /**
+   * The Design workspace's mark (a set-square and pencil). The pinned icon set has no `ws_design`
+   * artwork yet, so this is drawn from the same icon roles (line and the blue accent ramp).
+   */
+  designGlyph(size, cx, cy) {
+    const ramp = this.t.icons.accents[''] || {}, line = ramp.line || this.t.c('icon'), blue = ramp['active-3'] || '#4da7ff', pale = ramp['active-1'] || '#82c1ff';
+    const node = svg(size, size, `<g transform="scale(${size / 64})"><path d="M9 53V21l32 32z" fill="none" stroke="${line}" stroke-width="4.5" stroke-linejoin="round"/><path d="M17 45v-9l9 9z" fill="none" stroke="${line}" stroke-width="3" stroke-linejoin="round"/><path d="M30 38 48 12l8 6-18 26z" fill="${blue}"/><path d="M30 38l-2 9 9-3z" fill="${pale}"/></g>`, `left:${px(cx - size / 2)};top:${px(cy - size / 2)}`);
+    return node;
+  }
+
+  /** Text followed by the chevron icon, centred on or right-aligned to x (never a text glyph). */
+  labelChevron(text, x, cy, className = '', align = 'center') {
+    const node = el('div', { class: `pv-lc ${className}` }, el('span', { class: 'pv-t' }, text));
+    node.append(this.icons.el('chevron', 14, { ink: this.t.c('text_dim') }));
+    node.style.top = px(cy);
+    if (align === 'right') { node.style.right = px(x); node.style.transform = 'translateY(-50%)'; }
+    else { node.style.left = px(x); node.style.transform = 'translate(-50%,-50%)'; }
     return node;
   }
 
@@ -62,7 +83,7 @@ export class Kit {
   appBar(r, state) {
     const t = this.t, ink = t.c('app_bar_text'), cy = 17.5;
     const bar = tag(card('appbar', r), 'Application bar', ['app_bar', 'app_bar_text', 'app_bar_tab_active', 'app_bar_separator']);
-    bar.append(svg(22, 22, `<path d="M11 1.5 20 6.5v9L11 20.5 2 15.5v-9z" fill="${t.c('cube_face')}" stroke="${ink}" stroke-width="1.4" stroke-linejoin="round"/><path d="M2 6.5 11 11.5 20 6.5M11 11.5v9" fill="none" stroke="${ink}" stroke-width="1.4"/>`, `left:${px(5)};top:${px(cy - 11)}`));
+    bar.append(el('img', { class: 'pv-abs', src: new URL('../../assets/brand/solidcraft-mark.svg', import.meta.url).href, alt: '', style: `left:7px;top:${px(cy - 12)};height:24px;width:21px` }));
     bar.append(textAt('SolidCraft', 33, cy, 'pv-semibold bar pv-fs16'));
     bar.append(this.iconAt('home', 20, 135, cy, { ink }), abs('pv-vrule', rect(158, 7, 1, 24)), textAt('File', 175, cy, 'bar pv-fs15'));
     [229, 267, 305].forEach((x, i) => bar.append(this.iconAt(['save', 'undo', 'redo'][i], 20, x, cy, { ink })));
@@ -85,7 +106,7 @@ export class Kit {
     tabs.forEach((name, i) => {
       const on = name.toUpperCase() === state.tab;
       const node = tag(abs(`pv-rtab${on ? ' on' : ''}`, rect(tabCentres[i] - tabWidths[i] / 2 - ox, 49 - oy, tabWidths[i], 27)), name.toUpperCase(), ['panel_header', 'accent_soft', 'text', 'text_dim', 'hover']);
-      node.append(textAt(name, tabWidths[i] / 2, 13.5, 'pv-semibold pv-fs15', 'center'));
+      node.append(textAt(name, tabWidths[i] / 2, 13.5, `pv-fs14${on ? ' pv-semibold' : ''}`, 'center'));
       host.append(node);
     });
     host.append(textAt('+', 902 - ox, 62 - oy, 'dim pv-fs17', 'center'));
@@ -99,17 +120,17 @@ export class Kit {
       tools.forEach(([icon, label], k) => {
         const cx = centres[g][k] - ox, on = label === 'Extrude';
         const cell = tag(abs(`pv-tool${on ? ' on' : ''}`, rect(cx - 31, 82 - oy, 62, 68)), label, ['icon_palette.solid', 'icon_palette.line', 'selected_bg', 'hover']);
-        cell.append(this.iconAt(icon, 31, 31, 19), textAt(label, 31, 46, 'pv-fs14', 'center'));
+        cell.append(this.iconAt(icon, 27, 31, 17.5), textAt(label, 31, 45, 'pv-fs14', 'center'));
         host.append(cell);
       });
-      host.append(textAt(`${group} ⌄`, groupCentre[g] - ox, 162 - oy, 'dim pv-fs14', 'center'));
+      host.append(this.labelChevron(group, groupCentre[g] - ox, 162 - oy, 'dim pv-fs14'));
     });
     [406, 687, 913, 1096].forEach(x => host.append(abs('pv-sep', rect(x - ox, 86 - oy, 1, 86))));
   }
 
   /** The Browser panel: title row and the document tree. */
   browser(host, width, rows, state) {
-    host.append(textAt('Browser', 11, 19, 'pv-semibold pv-fs17'), textAt('1 body', 25, 19, 'dim pv-fs15', 'right'), this.chevron(width - 17, 19));
+    host.append(textAt('Browser', 11, 19, 'pv-semibold pv-fs17'), this.labelChevron('1 body', 14, 19, 'dim pv-fs15', 'right'));
     rows.forEach(([depth, text, icon, fold, eye, dim], i) => {
       if (i === 5 && !state.bodiesOpen) return;
       const cy = 245 - 189 + i * 29.9;
@@ -124,23 +145,36 @@ export class Kit {
     });
   }
 
-  /** The viewport navigation compass with its home button. */
+  /**
+   * The signed-axis compass (the app's axis view): a 116 px box, a translucent disc of radius 49.5
+   * with the border line, three hollow dimmed negative rings drawn first, the origin dot, then the
+   * three positive axis discs with bold letters, and the home chip. Colours are the theme tokens.
+   */
   navCube(r) {
-    const t = this.t, c = [r.x + r.w / 2 + 3, r.y + r.h / 2 + 2], R = r.w / 2 - 1;
-    const axes = [['Z', 0, -29, 'axis_z', true], ['Y', 24, -13, 'axis_y', true], ['X', 24, 17, 'axis_x', true], ['', -24, -13, 'axis_x', false], ['', -24, 15, 'axis_y', false], ['', 0, 30, 'axis_z', false]];
-    let marks = `<circle cx="${c[0]}" cy="${c[1]}" r="${R}" fill="${t.c('nav_viewport')}" stroke="${t.c('dialog_border')}"/>`;
-    marks += `<path d="M${c[0]} ${c[1] - 29}V${c[1] + 30}M${c[0] - 24} ${c[1] - 13}L${c[0] + 24} ${c[1] + 17}M${c[0] - 24} ${c[1] + 15}L${c[0] + 24} ${c[1] - 13}" stroke="${t.c('cube_border')}" stroke-width="2" fill="none"/>`;
-    for (const [letter, dx, dy, key, on] of axes) {
-      const x = c[0] + dx, y = c[1] + dy;
-      marks += on ? `<circle cx="${x}" cy="${y}" r="10" fill="${t.c(key)}"/><text x="${x}" y="${y + 0.5}" text-anchor="middle" dominant-baseline="middle" font-size="13" font-weight="700" fill="#1a1c1e">${letter}</text>`
-        : `<circle cx="${x}" cy="${y}" r="7" fill="none" stroke="${t.c(key)}" stroke-width="2"/>`;
-    }
-    marks += `<circle cx="${r.x + 15}" cy="${r.y + 12}" r="12" fill="${t.c('nav_viewport')}" stroke="${t.c('dialog_border')}"/>`;
-    const node = svg(r.w + 8, r.h + 8, '', `left:${px(r.x - 2)};top:${px(r.y - 2)}`);
-    node.setAttribute('viewBox', `${r.x - 2} ${r.y - 2} ${r.w + 8} ${r.h + 8}`); node.innerHTML = marks;
-    const home = this.iconAt('home', 14, r.x + 15, r.y + 12, { ink: t.c('icon') });
-    const wrap = tag(el('div', { class: 'pv-abs' }), 'Navigation cube', ['cube_face', 'cube_border', 'cube_text', 'cube_hover']);
-    wrap.style.cssText = 'left:0;top:0;width:0;height:0'; wrap.append(node, home);
+    const t = this.t, rgba = (hex, k) => { const v = hex.replace('#', ''); return `rgba(${parseInt(v.slice(0, 2), 16)},${parseInt(v.slice(2, 4), 16)},${parseInt(v.slice(4, 6), 16)},${((v.length >= 8 ? parseInt(v.slice(6, 8), 16) : 255) / 255) * k})`; };
+    const c = [r.x + r.w / 2, r.y + r.h / 2 - 4], R = 58;
+    // Tip offsets in the default isometric view, with the artwork scaled to 84% of the axis length.
+    const tips = [
+      ['-x', -26, -16, 'axis_x', false], ['-y', -26, 15, 'axis_y', false], ['-z', 0, 31, 'axis_z', false],
+      ['x', 26, 16, 'axis_x', true], ['y', 26, -15, 'axis_y', true], ['z', 0, -31, 'axis_z', true]
+    ];
+    let m = `<circle cx="${c[0]}" cy="${c[1]}" r="${R}" fill="${rgba(t.c('overlay'), 0.35)}" stroke="${rgba(t.c('border'), 0.75)}" stroke-width="1"/>`;
+    tips.forEach(([name, dx, dy, key, positive], i) => {
+      if (i === 3) m += `<circle cx="${c[0]}" cy="${c[1]}" r="3.6" fill="${rgba(t.c('text'), 0.9)}" stroke="${t.c('panel')}" stroke-width="1.4"/>`;
+      const col = t.c(key), ink = positive ? col : rgba(col, 0.55);
+      const at = [c[0] + dx, c[1] + dy], len = Math.hypot(dx, dy), radius = positive ? 11 : 4.8;
+      const end = [at[0] - (dx / len) * (positive ? radius : radius + 1.2), at[1] - (dy / len) * (positive ? radius : radius + 1.2)];
+      m += `<line x1="${c[0]}" y1="${c[1]}" x2="${end[0]}" y2="${end[1]}" stroke="${ink}" stroke-width="3.6"/><circle cx="${c[0]}" cy="${c[1]}" r="1.8" fill="${ink}"/>`;
+      m += positive
+        ? `<circle cx="${at[0]}" cy="${at[1]}" r="11" fill="${col}"/><text x="${at[0]}" y="${at[1]}" text-anchor="middle" dominant-baseline="central" font-family="Plex,system-ui,sans-serif" font-size="${t.m('font_compass')}" font-weight="700" fill="${t.c('on_accent')}">${name.toUpperCase()}</text>`
+        : `<circle cx="${at[0]}" cy="${at[1]}" r="4.8" fill="none" stroke="${ink}" stroke-width="2.4"/>`;
+    });
+    const home = [c[0] - 43, c[1] - 43];
+    m += `<circle cx="${home[0]}" cy="${home[1]}" r="15" fill="${rgba(t.c('overlay'), 0.5)}" stroke="${t.c('border')}" stroke-width="1"/>`;
+    const node = svg(r.w, r.h, '', `left:${px(r.x)};top:${px(r.y)};overflow:visible`);
+    node.setAttribute('viewBox', `${r.x} ${r.y} ${r.w} ${r.h}`); node.innerHTML = m;
+    const wrap = tag(el('div', { class: 'pv-abs' }), 'Navigation compass', ['overlay', 'border', 'panel', 'text', 'axis_x', 'axis_y', 'axis_z', 'on_accent']);
+    wrap.style.cssText = 'left:0;top:0;width:0;height:0'; wrap.append(node, this.iconAt('home', 20, home[0], home[1], { ink: t.c('icon') }));
     return wrap;
   }
 
@@ -222,7 +256,7 @@ export class Kit {
 
   /** The History strip. */
   historyStrip(host, r, items, state) {
-    const ox = r.x + 1, cy = 21;
+    const ox = 4, cy = 21;
     for (let i = 0; i < 6; i++) host.append(abs('pv-grip', rect(14 - ox + r.x + (i % 2) * 4, 14 + Math.floor(i / 2) * 4 - 1, 2, 2)));
     host.append(textAt('History', 33 - ox, cy, 'pv-semibold pv-fs17'));
     ['first', 'back', 'play', 'forward', 'last'].forEach((name, i) => {

@@ -10,7 +10,8 @@ export const REFERENCE = { w: 1276, h: 848 };
 export const MIN_SIZE = { w: 1276, h: 848 };
 export const MIN_ZOOM = 0.55;
 
-const M = 3;
+// The shell gap (SHELL_GAP in the app): between panels and from the window edge, on every side.
+const M = 7;
 const TABS = ['Model', 'Surface', 'Assemble', 'Insert', 'Inspect', 'Manage', 'View', 'Sheet Metal', 'Weldments'];
 const GROUPS = [
   ['Sketch', [['sketch', 'New Sketch']]],
@@ -48,28 +49,30 @@ export function appScene(kit, stage, state, dev) {
 
   root.append(kit.appBar(rect(0, 0, W, 38), state));
 
-  const rowTop = 45, rowH = 135;
+  const rowTop = 38 + M, rowH = 135;
   const workspace = card('chrome', rect(M, rowTop, 101, rowH));
   tag(workspace, 'Workspace switcher', ['panel', 'border']);
-  workspace.append(abs('pv-accent-bar', rect(12, 0, 77, 3)), kit.iconAt('sketch', 36, 49, 36), textAt('Design', 49, 79, 'pv-semibold pv-heading', 'center'), textAt('Workspace ⌄', 49, 102, 'pv-body dim', 'center'));
-  const ribbon = card('chrome', rect(109, rowTop, W - M - 109, rowH));
+  workspace.append(abs('pv-accent-bar', rect(12, 0, 77, 3)), kit.designGlyph(36, 49, 36), textAt('Design', 49, 79, 'pv-semibold pv-heading', 'center'), kit.labelChevron('Workspace', 49, 102, 'pv-body dim'));
+  const ribbonX = M + 101 + M;
+  const ribbon = card('chrome', rect(ribbonX, rowTop, W - M - ribbonX, rowH));
   tag(ribbon, 'Ribbon', ['panel', 'border']);
-  kit.ribbon(ribbon, W - M - 109, TABS, GROUPS, state);
+  kit.ribbon(ribbon, W - M - ribbonX, TABS, GROUPS, state);
   root.append(workspace, ribbon);
 
-  const browser = card('panel', rect(M, 188, 284, 404));
+  const browser = card('panel', rect(M, rowTop + rowH + M, 284, 404));
   tag(browser, 'Browser', ['panel', 'border']);
   kit.browser(browser, 284, TREE, state);
   root.append(browser);
 
   // Items on the right and bottom edges stay anchored to them as the window grows past the reference size.
   const dx = W - REFERENCE.w, dy = H - REFERENCE.h;
-  root.append(kit.navCube(rect(W - M - 123, 195, 115, 112)));
+  const compass = rect(W - M - 116, rowTop + rowH + 2 * M, 116, 116);
+  root.append(kit.navCube(compass));
   root.append(kit.navToolbar(rect(598 + dx / 2, 740 + dy, 378, 43)));
 
   // The feature dialog is anchored to the top right, below the compass, and can be dragged.
   const dialogSize = { w: 298, h: 438 }, drag = state.dialog;
-  const anchor = { x: W - 7 - dialogSize.w, y: 195 + 112 + 15 };
+  const anchor = { x: W - M - dialogSize.w, y: compass.y + compass.h + M };
   const dialogX = Math.min(Math.max(anchor.x + drag.dx, 0), W - dialogSize.w), dialogY = Math.min(Math.max(anchor.y + drag.dy, 0), H - 60);
   root.append(kit.extrudeDialog(rect(dialogX, dialogY, dialogSize.w, dialogSize.h), state));
 
