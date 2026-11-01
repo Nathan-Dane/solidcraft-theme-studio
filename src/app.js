@@ -18,7 +18,7 @@ let expectedNativePreview = null;
 let rendererInfo = null;
 let previewLanguage = 'en-GB';
 const categoryScene = { surfaces: 'glass', icons: 'icons', tabs: 'tools', options: 'controls' };
-const sceneNames = { tools: 'Tools & tabs', browser: 'Browser & history', controls: 'Feature controls', glass: 'Glass & menus', viewport: 'Viewport details', icons: 'Icon lab' };
+const sceneNames = { app: 'Full app', tools: 'Tools & tabs', browser: 'Browser & history', controls: 'Feature controls', glass: 'Glass & menus', viewport: 'Viewport details', icons: 'Icon lab' };
 const recovered = store.recover();
 if (recovered) notify('Your last theme draft is back on the workbench.');
 
@@ -314,7 +314,10 @@ async function startRuntime(withPreview = true) {
       }));
       previewLanguage = schema.defaultLanguage || 'en-GB'; $('#language-select').value = previewLanguage; $('#language-select').disabled = !previewReady;
     }
+    const hasApp = Array.isArray(schema.scenes) && schema.scenes.includes('app');
+    document.querySelector('[data-scene=app]').hidden = !hasApp;
     if (previewReady && typeof engine.setView === 'function' && matchMedia('(max-width:800px)').matches) { $('#scene-select').value = 'controls'; await bridge.call('setView', JSON.stringify({ scene: 'controls' })); }
+    else if (previewReady && hasApp && typeof engine.setView === 'function') { $('#scene-select').value = 'app'; await bridge.call('setView', JSON.stringify({ scene: 'app' })); }
     editor.setRuntime(schema, evaluation); editor.show();
     if (previewReady && store.get().lastValidText !== store.get().text) {
       const restored = await bridge.preview({ ...store.get(), text: store.get().lastValidText });

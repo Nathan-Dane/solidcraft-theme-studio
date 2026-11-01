@@ -49,6 +49,7 @@
     <section class="preview-shell" aria-label="Live SolidCraft previews">
       <div class="stage-bar">
         <div class="scene-tabs" role="group" aria-label="Preview scene">
+          <button type="button" data-scene="app" aria-pressed="false" title="The whole application: ribbon, browser, inspector and history over a part" hidden>Full app</button>
           <button type="button" data-scene="all" aria-pressed="true" title="Every scene on one board">All scenes</button>
           <button type="button" data-scene="tools" aria-pressed="false" title="Tabs, semantic tool colours and navigation controls">Tools &amp; tabs</button>
           <button type="button" data-scene="browser" aria-pressed="false" title="Fold, hide, select and inspect the actual dense rows">Browser &amp; history</button>
@@ -57,7 +58,7 @@
           <button type="button" data-scene="viewport" aria-pressed="false" title="Production grid, dimensions, snap markers and cube">Viewport</button>
           <button type="button" data-scene="icons" aria-pressed="false" title="Original SVG geometry, knockout, masks and optical variants">Icon lab</button>
         </div>
-        <select id="scene-select" aria-label="Preview scene" disabled hidden><option value="all">All scenes</option><option value="tools">Tools &amp; tabs</option><option value="browser">Browser &amp; history</option><option value="controls">Feature controls</option><option value="glass">Glass &amp; menus</option><option value="viewport">Viewport details</option><option value="icons">Icon lab</option></select>
+        <select id="scene-select" aria-label="Preview scene" disabled hidden><option value="app">Full app</option><option value="all">All scenes</option><option value="tools">Tools &amp; tabs</option><option value="browser">Browser &amp; history</option><option value="controls">Feature controls</option><option value="glass">Glass &amp; menus</option><option value="viewport">Viewport details</option><option value="icons">Icon lab</option></select>
         <div class="preview-tools"><button id="inspect-button" class="button compact" aria-pressed="false" title="Inspect the theme roles behind a preview element" disabled>Inspect</button><button id="compare-button" class="button compact" aria-pressed="false" disabled>Pin comparison</button><button id="stage-focus" class="icon-button" type="button" aria-pressed="false" aria-label="Expand preview" title="Expand preview (hide editor)"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M3 8V3h5M12 3h5v5M17 12v5h-5M8 17H3v-5"/></svg></button></div>
       </div>
       <div class="preview-context">
