@@ -3,6 +3,7 @@ import { Editor } from './editor.js';
 import { el, field } from './dom.js';
 import { friendly } from './authoring.js';
 import * as bridge from './bridge.js';
+import { HtmlPreview } from './preview/preview.js';
 
 const $ = selector => document.querySelector(selector);
 if (matchMedia('(max-width:800px)').matches) $('.try-options').open = false;
@@ -13,6 +14,10 @@ if (!response.ok) throw new Error('The bundled Onyx theme could not be loaded.')
 const starter = await response.json();
 const store = createStore(starter);
 const editor = new Editor($('#editor'), store, notify);
+const gpuMode = new URLSearchParams(location.search).has('gpu');
+const htmlPreview = new HtmlPreview($('#preview-stage'));
+$('#preview-stage').classList.toggle('gpu', gpuMode);
+$('#preview-stage').dataset.view = new URLSearchParams(location.search).get('view') || 'diff';
 let ready = false, previewReady = false, rendererPresented = false, schema = null, evaluation = null, pendingEvaluation = 0, evaluationTimer;
 let expectedNativePreview = null;
 let rendererInfo = null;
@@ -103,9 +108,13 @@ async function updatePreview() {
     if (!valid) return;
     store.acceptValid(state.text);
     if (previewReady) {
-      const painted = await bridge.preview(state);
-      if (painted?.ok === false || errors(painted)) throw new Error(errors(painted) || 'The preview could not accept this theme.');
-      expectedNativePreview = { values: effective(result), tab: state.workspace, vision: state.vision };
+      if (gpuMode) {
+        const painted = await bridge.preview(state);
+        if (painted?.ok === false || errors(painted)) throw new Error(errors(painted) || 'The preview could not accept this theme.');
+        expectedNativePreview = { values: effective(result), tab: state.workspace, vision: state.vision };
+      }
+      htmlPreview.update(result, state);
+      showPreviewReady();
     }
     renderPreviewOptions(result);
     if (!previewReady) $('#engine-status').innerHTML = '<span></span>Theme tools ready · preview unavailable';
@@ -186,7 +195,7 @@ document.addEventListener('keydown', event => {
 });
 $('#workspace-select').addEventListener('change', () => store.setContext($('#workspace-select').value, $('#vision-select').value));
 $('#vision-select').addEventListener('change', () => store.setContext($('#workspace-select').value, $('#vision-select').value));
-$('#scene-select').addEventListener('change', () => applyView({ scene: $('#scene-select').value }).catch(error => notify(error.message)));
+$('#scene-select').addEventListener('change', () => { htmlPreview.setScene($('#scene-select').value); if (gpuMode) applyView({ scene: $('#scene-select').value }).catch(error => notify(error.message)); });
 $('#language-select').addEventListener('change', async () => {
   const input = $('#language-select'), previous = previewLanguage, language = input.value;
   input.disabled = true;
@@ -238,14 +247,20 @@ $('#compare-button').addEventListener('click', async () => {
 $('#inspect-button').addEventListener('click', async () => {
   const pressed = $('#inspect-button').getAttribute('aria-pressed') !== 'true'; $('#inspect-button').setAttribute('aria-pressed', pressed);
   try {
-    if (bridge.runtime()?.setInspect) await bridge.call('setInspect', pressed);
-    else if (bridge.runtime()?.setView) await applyView({ inspect: pressed });
+    htmlPreview.setInspect(pressed);
+    if (gpuMode) { if (bridge.runtime()?.setInspect) await bridge.call('setInspect', pressed); else if (bridge.runtime()?.setView) await applyView({ inspect: pressed }); }
     $('#inspection-panel').hidden = !pressed;
     if (pressed) renderInspection(null);
   } catch (error) { $('#inspect-button').setAttribute('aria-pressed', !pressed); notify(error.message); }
 });
 $('#about-button').addEventListener('click', () => { $('#about-dialog').showModal(); renderDiagnostics(); });
 window.addEventListener('solidcraft-theme-studio-ready', () => startRuntime(true));
+function showPreviewReady() {
+  $('#engine-loading').hidden = true; $('#engine-status').classList.add('ready');
+  $('#engine-status').innerHTML = '<span></span>SolidCraft tokens, drawn in HTML';
+  $('#preview-live-status').innerHTML = '<span class="live-dot"></span>Live preview · hover and click to explore';
+  rendererPresented = true;
+}
 function runtimeFailure(message) {
   previewReady = false; rendererPresented = false;
   $('#engine-status').classList.remove('ready');
@@ -300,10 +315,11 @@ async function startRuntime(withPreview = true) {
       $('#workspace-select').value = store.get().workspace;
     }
     const engine = bridge.runtime();
-    $('#inspect-button').disabled = !previewReady || (typeof engine.setInspect !== 'function' && !(typeof engine.setView === 'function' && (schema.capabilities?.inspect || schema.capabilities?.inspection)));
-    $('#compare-button').disabled = !previewReady || (typeof engine.setComparison !== 'function' && !(typeof engine.setView === 'function' && schema.capabilities?.comparison));
-    $('#scene-select').disabled = !previewReady || typeof engine.setView !== 'function';
-    if (Array.isArray(schema.languages) && schema.languages.length && typeof engine.setView === 'function') {
+    await htmlPreview.init(schema);
+    $('#inspect-button').disabled = !previewReady;
+    $('#compare-button').disabled = true;
+    $('#scene-select').disabled = !previewReady;
+    if (gpuMode && Array.isArray(schema.languages) && schema.languages.length && typeof engine.setView === 'function') {
       $('#language-context').hidden = false;
       $('#language-select').replaceChildren(...schema.languages.map(language => {
         const id = typeof language === 'string' ? language : language.id, label = typeof language === 'string' ? language : language.label;
@@ -314,10 +330,9 @@ async function startRuntime(withPreview = true) {
       }));
       previewLanguage = schema.defaultLanguage || 'en-GB'; $('#language-select').value = previewLanguage; $('#language-select').disabled = !previewReady;
     }
-    const hasApp = Array.isArray(schema.scenes) && schema.scenes.includes('app');
-    document.querySelector('[data-scene=app]').hidden = !hasApp;
-    if (previewReady && typeof engine.setView === 'function' && matchMedia('(max-width:800px)').matches) { $('#scene-select').value = 'controls'; await bridge.call('setView', JSON.stringify({ scene: 'controls' })); }
-    else if (previewReady && hasApp && typeof engine.setView === 'function') { $('#scene-select').value = 'app'; await bridge.call('setView', JSON.stringify({ scene: 'app' })); }
+    document.querySelector('[data-scene=app]').hidden = false;
+    $('#scene-select').value = 'app'; htmlPreview.setScene('app');
+    if (gpuMode && typeof engine.setView === 'function') await bridge.call('setView', JSON.stringify({ scene: 'app' }));
     editor.setRuntime(schema, evaluation); editor.show();
     if (previewReady && store.get().lastValidText !== store.get().text) {
       const restored = await bridge.preview({ ...store.get(), text: store.get().lastValidText });

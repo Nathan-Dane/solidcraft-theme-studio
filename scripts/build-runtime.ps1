@@ -75,6 +75,24 @@ try {
     if (Test-Path -LiteralPath $localesDir) { Remove-Item -LiteralPath $localesDir -Recurse -Force }
     New-Item -ItemType Directory -Force -Path $localesDir | Out-Null
     Copy-Item -Path (Join-Path $localesSource '*.json') -Destination $localesDir -Force
+    # Icon artwork: the pinned source's masters (flat and model) and small optical variants, with an
+    # index from master id to file, so the page draws the same artwork the native renderer rasterises.
+    $iconSource = Join-Path $SourcePath 'assets/icons/ui/design/svg'
+    $iconsDir = Join-Path $runtimeDir 'icons'
+    if (Test-Path -LiteralPath $iconsDir) { Remove-Item -LiteralPath $iconsDir -Recurse -Force }
+    New-Item -ItemType Directory -Force -Path $iconsDir | Out-Null
+    $iconIndex = [ordered]@{ masters = [ordered]@{}; small = [ordered]@{} }
+    foreach ($group in @('flat', 'model', 'small')) {
+        $groupSource = Join-Path $iconSource $group
+        if (-not (Test-Path -LiteralPath $groupSource)) { throw "Missing icon group $group in the runtime source." }
+        New-Item -ItemType Directory -Force -Path (Join-Path $iconsDir $group) | Out-Null
+        foreach ($file in Get-ChildItem -LiteralPath $groupSource -Filter '*.svg') {
+            Copy-Item -LiteralPath $file.FullName -Destination (Join-Path $iconsDir $group) -Force
+            $id = $file.BaseName
+            if ($group -eq 'small') { $iconIndex.small[$id] = "small/$($file.Name)" } else { $iconIndex.masters[$id] = "$group/$($file.Name)" }
+        }
+    }
+    $iconIndex | ConvertTo-Json -Depth 4 | Set-Content -LiteralPath (Join-Path $iconsDir 'index.json') -Encoding utf8NoBOM
     $fontDir = Join-Path $runtimeDir 'fonts'
     New-Item -ItemType Directory -Force -Path $fontDir | Out-Null
     $fontPaths = @()

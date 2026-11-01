@@ -66,27 +66,32 @@ try {
     exportDefinition: guarded(runtime.exportDefinition),
     state: guarded(runtime.state)
   });
-  // wgpu tries a WebGPU surface first. Where `navigator.gpu` exists but yields no adapter (some Firefox
-  // builds and GPUs), that attempt claims the canvas and the WebGL 2 fallback then cannot get a context.
-  // Hide an unusable WebGPU so wgpu goes straight to WebGL 2 on a clean canvas.
-  const webgpuUsable = await (async () => {
-    try { return Boolean(navigator.gpu && await navigator.gpu.requestAdapter()); } catch { return false; }
-  })();
-  if (!webgpuUsable && navigator.gpu) Object.defineProperty(navigator, 'gpu', { value: undefined, configurable: true });
-  let webgl2Reason = '';
-  const webgl2Usable = (() => {
-    try {
-      const probe = document.createElement('canvas');
-      probe.addEventListener('webglcontextcreationerror', event => { webgl2Reason = event.statusMessage || ''; });
-      return Boolean(probe.getContext('webgl2'));
-    } catch (error) { webgl2Reason = String(error?.message || error); return false; }
-  })();
-  if (!webgpuUsable && !webgl2Usable) throw new Error(`This browser exposes neither WebGPU nor WebGL 2, so the native preview cannot draw. Theme editing still works. Browser reason: ${webgl2Reason || 'none given'}. In Firefox-based browsers, open about:support and look under Graphics, then check hardware acceleration and the webgl.disabled and webgl.force-enabled settings in about:config.`);
-  await runtime.start('solidcraft-theme-preview');
-  window.dispatchEvent(new CustomEvent('solidcraft-theme-studio-ready', {detail: {revision: manifest.revision}}));
+  // The preview is HTML. The native GPU renderer is only started for side-by-side comparison (?gpu).
+  const gpu = new URLSearchParams(location.search).has('gpu');
+  if (gpu) {
+    // wgpu tries a WebGPU surface first. Where `navigator.gpu` exists but yields no adapter (some Firefox
+    // builds and GPUs), that attempt claims the canvas and the WebGL 2 fallback then cannot get a context.
+    // Hide an unusable WebGPU so wgpu goes straight to WebGL 2 on a clean canvas.
+    const webgpuUsable = await (async () => {
+      try { return Boolean(navigator.gpu && await navigator.gpu.requestAdapter()); } catch { return false; }
+    })();
+    if (!webgpuUsable && navigator.gpu) Object.defineProperty(navigator, 'gpu', { value: undefined, configurable: true });
+    let webgl2Reason = '';
+    const webgl2Usable = (() => {
+      try {
+        const probe = document.createElement('canvas');
+        probe.addEventListener('webglcontextcreationerror', event => { webgl2Reason = event.statusMessage || ''; });
+        return Boolean(probe.getContext('webgl2'));
+      } catch (error) { webgl2Reason = String(error?.message || error); return false; }
+    })();
+    if (!webgpuUsable && !webgl2Usable) throw new Error(`This browser exposes neither WebGPU nor WebGL 2, so the native preview cannot draw. Theme editing still works. Browser reason: ${webgl2Reason || 'none given'}. In Firefox-based browsers, open about:support and look under Graphics, then check hardware acceleration and the webgl.disabled and webgl.force-enabled settings in about:config.`);
+      await runtime.start('solidcraft-theme-preview');
+  }
+  window.dispatchEvent(new CustomEvent('solidcraft-theme-studio-ready', {detail: {revision: manifest.revision, gpu}}));
   let previous = '';
+  if (!gpu) { window.dispatchEvent(new CustomEvent('solidcraft-theme-studio-codec')); }
   let previousInspection = '';
-  setInterval(() => {
+  if (gpu) setInterval(() => {
     if (failed) return;
     let value;
     try { value = runtime.state(); }

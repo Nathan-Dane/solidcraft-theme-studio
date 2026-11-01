@@ -1,0 +1,107 @@
+// The HTML preview: renders SolidCraft scenes as DOM from the codec's resolved theme. It replaces
+// the old GPU canvas; there is no WebGL or WebGPU requirement.
+import { el } from '../dom.js';
+import { Tokens } from './tokens.js';
+import { Icons, loadIcons } from './icons.js';
+import { Kit } from './kit.js';
+import { appScene } from './app-scene.js';
+import { scenes } from './scenes.js';
+
+const hex = value => value;
+function withAlpha(color, factor) {
+  const v = color.replace('#', '');
+  const a = (v.length >= 8 ? parseInt(v.slice(6, 8), 16) : 255) / 255 * factor;
+  return `rgba(${parseInt(v.slice(0, 2), 16)},${parseInt(v.slice(2, 4), 16)},${parseInt(v.slice(4, 6), 16)},${a})`;
+}
+
+export class HtmlPreview {
+  constructor(stage) {
+    this.stage = stage;
+    this.tokens = new Tokens();
+    this.icons = new Icons(this.tokens);
+    this.kit = new Kit(this.tokens, this.icons);
+    window.__preview = this;
+    this.scene = 'app';
+    this.state = { tab: 'MODEL', bodiesOpen: true, history: 8, form: { direction: 'One Side', extent: 'Distance', operation: 'Join' } };
+    this.inspect = false; this.locked = null;
+    this.root = el('div', { class: 'pv-root', tabindex: '0', 'aria-label': 'SolidCraft interface preview' });
+    stage.prepend(this.root);
+    this.size = { w: 1, h: 1 };
+    new ResizeObserver(entries => {
+      const box = entries[0].contentRect;
+      if (Math.abs(box.width - this.size.w) < 0.5 && Math.abs(box.height - this.size.h) < 0.5) return;
+      this.size = { w: box.width, h: box.height }; this.render();
+    }).observe(stage);
+    this.root.addEventListener('pointermove', event => this.hover(event));
+    this.root.addEventListener('pointerleave', () => this.hover(null));
+    this.root.addEventListener('click', event => this.click(event));
+  }
+
+  /** Development comparison against a screenshot of the real window: ?ref&view=diff|ref|html&crop=x,y,w,h */
+  get dev() {
+    const params = new URLSearchParams(location.search);
+    return params.has('ref') ? { ref: { src: new URL('../../mockups/real-app.webp', import.meta.url).href, w: 1291, h: 858 }, view: params.get('view') || 'diff', crop: params.get('crop')?.split(',').map(Number) } : null;
+  }
+
+  async init(contract) { await loadIcons(contract.iconIndex); this.iconsReady = true; this.render(); }
+
+  /** Take a new evaluation from the codec. Returns true when something visible changed. */
+  update(result, state) {
+    const changed = this.tokens.update(result);
+    this.state.tab = state.workspace;
+    if (changed || this.dirtyTab !== state.workspace) { this.dirtyTab = state.workspace; this.render(); }
+    return changed;
+  }
+
+  setScene(scene) { if (scene !== this.scene) { this.scene = scene; this.locked = null; this.render(); } }
+
+  setInspect(on) { this.inspect = on; this.root.classList.toggle('inspecting', on); if (!on) { this.locked = null; this.mark(null); } }
+
+  render() {
+    if (!this.tokens.ready || !this.iconsReady) return;
+    const t = this.tokens;
+    for (const [name, value] of Object.entries(t.cssVariables())) this.root.style.setProperty(name, value);
+    const border = t.primaryBorder(t.c('border'));
+    this.root.style.setProperty('--shadow', withAlpha(t.c('app_bar'), 0.18));
+    this.root.style.setProperty('--border-color', border.color);
+    const inset = t.borders.primary_inset;
+    this.root.style.setProperty('--inset-gap', inset ? `${inset.gap}px` : '0px');
+    this.root.style.setProperty('--inset-width', inset ? `${inset.width}px` : '0px');
+    this.root.style.setProperty('--inset-color', inset?.color ?? 'transparent');
+    this.root.style.setProperty('--border-color-dialog', t.borders.primary?.color ?? t.c('dialog_border'));
+    this.root.classList.toggle('dark', t.dark);
+    const build = this.scene === 'app' ? (kit, stage, state) => appScene(kit, stage, state, this.dev) : scenes[this.scene] || scenes.all;
+    this.root.replaceChildren(build(this.kit, this.size, this.state, this.scene));
+    this.root.dataset.scene = this.scene;
+    if (this.dev) this.root.dataset.refview = this.dev.view; else delete this.root.dataset.refview;
+    this.mark(this.locked?.label ?? null);
+  }
+
+  target(event) { return event?.target?.closest?.('[data-label]') ?? null; }
+
+  hit(node) {
+    return node ? { label: node.dataset.label, roles: node.dataset.roles.split(',').filter(Boolean), scene: this.scene, locked: false } : null;
+  }
+
+  hover(event) {
+    if (!this.inspect || this.locked) return;
+    const node = this.target(event);
+    this.mark(node?.dataset.label ?? null, node);
+    const hit = this.hit(node);
+    if (hit) window.dispatchEvent(new CustomEvent('solidcraft-theme-studio-inspect', { detail: hit }));
+  }
+
+  click(event) {
+    if (!this.inspect) return;
+    const node = this.target(event);
+    const hit = this.hit(node);
+    if (hit) { hit.locked = true; this.locked = hit; this.mark(hit.label, node); window.dispatchEvent(new CustomEvent('solidcraft-theme-studio-inspect', { detail: hit })); }
+    else { this.locked = null; this.mark(null); }
+  }
+
+  mark(label, node = null) {
+    this.root.querySelectorAll('.pv-hit').forEach(item => item.classList.remove('pv-hit'));
+    if (!label) return;
+    (node ? [node] : [...this.root.querySelectorAll('[data-label]')].filter(item => item.dataset.label === label)).forEach(item => item.classList.add('pv-hit'));
+  }
+}

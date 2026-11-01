@@ -1,0 +1,113 @@
+/* The HTML preview of SolidCraft. Everything is painted from the codec's resolved tokens, exposed as
+   --c-* (colours) and --m-* (metrics, in px) on .pv-root; nothing here picks a theme colour. */
+.pv-root{position:absolute;inset:0;overflow:hidden;font-family:Plex,system-ui,sans-serif;font-size:var(--m-font-body);line-height:1.2;color:var(--c-text);background:var(--c-viewport-bottom);user-select:none;-webkit-user-select:none;outline:0}
+.pv-root::before{content:"";position:absolute;inset:0;background:linear-gradient(var(--c-viewport-top),var(--c-viewport-bottom))}
+.pv-window{position:absolute;left:0;top:0;overflow:hidden}
+.pv-part{position:absolute;left:0;top:0;pointer-events:none}
+.pv-pending{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;color:var(--c-text-dim);font-size:14px}
+.pv-abs{position:absolute}
+
+/* Surfaces */
+.pv-card{position:absolute;box-sizing:border-box;overflow:hidden;background:var(--c-panel);-webkit-backdrop-filter:blur(var(--blur));backdrop-filter:blur(var(--blur))}
+.pv-card.pv-chrome,.pv-card.pv-panel{border:var(--border-width) solid var(--border-color);border-radius:var(--m-radius-lg);box-shadow:0 var(--m-space-2) var(--m-space-8) var(--shadow)}
+.pv-card.pv-window{background:var(--c-dialog-body);border:var(--border-width) solid var(--border-color-dialog);border-radius:var(--m-radius-xl);box-shadow:0 var(--m-space-2) var(--m-space-8) var(--shadow)}
+.pv-card.pv-appbar{background:var(--c-app-bar);backdrop-filter:none}
+.pv-card.pv-nav{background:color-mix(in srgb,var(--c-dialog-body) 97%,transparent);border:1px solid var(--c-dialog-border);border-radius:10px;overflow:visible}
+
+/* Text */
+.pv-t{white-space:nowrap}
+.pv-at{position:absolute}
+.pv-body{font-size:var(--m-font-body)}.pv-small{font-size:var(--m-font-small)}.pv-heading{font-size:var(--m-font-heading)}.pv-button{font-size:var(--m-font-button)}
+.pv-semibold{font-weight:600}
+.dim{color:var(--c-text-dim)}.bar{color:var(--c-app-bar-text)}
+.ic{display:inline-block;line-height:0;flex:none}.ic svg{display:block}
+
+/* Application bar */
+.pv-bartab{position:absolute;background:var(--c-app-bar-tab-active);border-radius:var(--m-control-radius,6px)}
+.pv-bug{position:absolute;border:1px solid var(--c-app-bar-separator);border-radius:var(--m-control-radius,6px)}
+
+/* Ribbon */
+.pv-rtab{position:absolute;border-radius:var(--m-control-radius,6px);cursor:default}
+.pv-rtab.on{background:var(--c-tab-soft)}
+.pv-rtab:not(.on):hover{background:var(--c-hover)}
+.pv-rtab:not(.on) .pv-t{color:var(--c-text-dim)}
+.pv-tool{position:absolute;box-sizing:border-box;border-radius:var(--m-control-radius,6px)}
+.pv-tool.on{background:var(--c-tab-soft);box-shadow:inset 0 0 0 1px var(--c-tab)}
+.pv-tool:not(.on):hover{background:var(--c-hover)}
+.pv-sep{position:absolute;background:var(--c-dialog-rule)}
+
+/* Tree */
+.pv-row{position:absolute;border-radius:calc(var(--m-radius-sm) - 1px)}
+.pv-row:hover{background:var(--c-hover)}.pv-row.on{background:var(--c-tab-soft)}
+.pv-chev{position:absolute;width:6px;height:6px;border-right:1.5px solid var(--c-text-dim);border-bottom:1.5px solid var(--c-text-dim);transform:rotate(-45deg)}
+.pv-chev.open{transform:rotate(45deg)}.pv-chev.down{transform:rotate(45deg) translate(-1px,-1px)}
+
+/* Navigation toolbar, history */
+.pv-nav-btn,.pv-nav{}
+.pv-card .pv-nav{position:absolute;border-radius:7px}
+.pv-card .pv-nav:hover{background:var(--c-nav-hover)}.pv-card .pv-nav.on{background:var(--c-tab-soft)}
+.pv-chip{position:absolute;border-radius:var(--m-radius-lg);background:var(--c-timeline-item)}
+.pv-chip.on{background:var(--c-tab-soft);box-shadow:inset 0 0 0 1px var(--c-tab)}
+.pv-transport{position:absolute;border-radius:var(--m-radius-md)}.pv-transport:hover{background:var(--c-hover)}
+
+/* Controls */
+.pv-field{position:absolute;box-sizing:border-box;background:var(--c-control-fill);border:1px solid var(--c-control-border);border-radius:var(--m-radius-md)}
+.pv-field.focus{border-color:var(--c-form-primary);box-shadow:0 0 0 1px var(--c-form-primary)}
+.pv-btn{position:absolute;box-sizing:border-box;background:var(--c-control-fill);border:1px solid var(--c-control-border);border-radius:var(--m-radius-md)}
+.pv-btn.primary{background:var(--c-form-primary-fill);border-color:var(--c-form-primary-fill);color:var(--c-on-accent,#000)}
+.pv-btn.disabled{opacity:.45}
+.pv-check{position:absolute}
+.pv-box{position:absolute;left:0;width:14px;height:14px;box-sizing:border-box;border:1px solid var(--c-control-border);border-radius:3px;background:var(--c-control-fill)}
+.pv-box.on{background:var(--c-form-primary-fill);border-color:var(--c-form-primary-fill)}
+
+/* Inspect */
+.pv-root.inspecting [data-label]{cursor:pointer}
+.pv-hit{outline:1.5px solid var(--c-accent);outline-offset:2px}
+
+/* Development: compare against a screenshot of the real window (?ref&view=diff|ref|html). */
+.pv-ref{position:absolute;left:0;top:0;width:1291px;height:858px;pointer-events:none;z-index:50}
+.pv-root[data-refview=diff] .pv-ref{mix-blend-mode:difference}
+.pv-root[data-refview=html] .pv-ref{display:none}
+.pv-root[data-refview=ref] .pv-window>:not(.pv-ref){visibility:hidden}
+
+/* ---- Measured type sizes (the real window's text is larger than the codec's font tokens) ---- */
+.pv-fs13{font-size:13px}.pv-fs14{font-size:14px}.pv-fs15{font-size:15px}.pv-fs17{font-size:17px}
+.sec{letter-spacing:.06em}
+
+/* ---- Borders: the primary line plus the theme's inset line inside it ---- */
+.pv-card.pv-chrome,.pv-card.pv-panel{--r:var(--m-radius-lg)}
+.pv-card.pv-window{--r:var(--m-radius-xl)}
+.pv-card.pv-chrome::after,.pv-card.pv-panel::after,.pv-card.pv-window::after{content:"";position:absolute;inset:var(--inset-gap,0px);box-sizing:border-box;border:var(--inset-width,0px) solid var(--inset-color,transparent);border-radius:max(calc(var(--r) - var(--border-width) - var(--inset-gap,0px)),0px);pointer-events:none}
+.pv-card.pv-nav{--r:10px}
+.pv-accent-bar{background:var(--c-tab);border-radius:0 0 3px 3px}
+.pv-card>.pv-abs,.pv-card .pv-t,.pv-card .ic{z-index:1}
+
+/* ---- App bar ---- */
+.pv-card.pv-appbar{border:0;border-radius:0;box-shadow:none}
+.pv-vrule{position:absolute;background:var(--c-app-bar-separator)}
+.pv-card.pv-nav .pv-vrule,.pv-card.pv-panel .pv-vrule{background:var(--c-dialog-rule)}
+.pv-bartab{border-radius:6px}
+.pv-wc{position:absolute;background:var(--c-app-bar-text)}.pv-wc.box{background:none;border:1.4px solid var(--c-app-bar-text);height:11px}
+
+/* ---- Ribbon, tree, nav, history ---- */
+.pv-rtab{border-radius:6px}
+.pv-rtab:not(.on) .pv-t{color:var(--c-text-dim)}
+.pv-tool{border-radius:7px}
+.pv-search{background:var(--c-field);border-color:var(--c-control-border);border-radius:6px}
+.pv-row{border-radius:5px}
+.pv-radio{position:absolute;width:14px;height:14px;box-sizing:border-box;border-radius:50%;border:1.5px solid var(--c-text-dim)}
+.pv-radio::after{content:"";position:absolute;inset:2.5px;border-radius:50%;background:var(--c-text-dim)}
+.pv-chev{width:5px;height:5px;border-right:1.6px solid;border-bottom:1.6px solid;transform:rotate(45deg)}
+.pv-chev.right{transform:rotate(-45deg)}.pv-chev.down{transform:rotate(45deg)}
+.pv-card .pv-nav{border-radius:7px}
+.pv-grip{position:absolute;width:2px;height:2px;border-radius:50%;background:var(--c-text-dim)}
+.pv-playhead{position:absolute;background:var(--c-text-dim);border-radius:1px}
+.pv-chip{border-radius:7px}
+
+/* ---- Dialog ---- */
+.pv-rule{position:absolute;height:1px;background:var(--c-dialog-rule)}
+.pv-rule.full{background:var(--c-dialog-rule)}
+.pv-btn{border-radius:6px}
+.pv-field{border-radius:6px}
+.pv-box{width:16px;height:16px;border-radius:3px}
+.pv-fs16{font-size:16px}
