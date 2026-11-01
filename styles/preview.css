@@ -138,3 +138,7 @@
 .pv-glabel{position:absolute;border-radius:6px}.pv-glabel:hover{background:var(--c-hover)}
 .pv-field.pv-search{background:var(--c-control-fill);border-radius:8px}
 .pv-keycap{position:absolute;border-radius:5px;background:var(--c-field)}
+
+/* The viewport pans with click and drag. */
+.pv-part{pointer-events:auto;cursor:grab;touch-action:none}
+.pv-part.panning{cursor:grabbing}

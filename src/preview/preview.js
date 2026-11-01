@@ -22,7 +22,7 @@ export class HtmlPreview {
     this.kit = new Kit(this.tokens, this.icons);
     window.__preview = this;
     this.scene = 'app';
-    this.state = { tab: 'MODEL', bodiesOpen: true, history: 8, dialog: { dx: 0, dy: 0 }, form: { direction: 'One Side', extent: 'Distance', operation: 'Join' } };
+    this.state = { tab: 'MODEL', bodiesOpen: true, history: 8, dialog: { dx: 0, dy: 0 }, pan: { x: 0, y: 0 }, form: { direction: 'One Side', extent: 'Distance', operation: 'Join' } };
     this.inspect = false; this.locked = null;
     this.root = el('div', { class: 'pv-root', tabindex: '0', 'aria-label': 'SolidCraft interface preview' });
     stage.prepend(this.root);
@@ -35,7 +35,7 @@ export class HtmlPreview {
     this.root.addEventListener('pointermove', event => this.hover(event));
     this.root.addEventListener('pointerleave', () => this.hover(null));
     this.root.addEventListener('click', event => this.click(event));
-    this.root.addEventListener('pointerdown', event => this.startDrag(event));
+    this.root.addEventListener('pointerdown', event => { if (!this.startPan(event)) this.startDrag(event); });
   }
 
   /** Development comparison against a screenshot of the real window: ?ref&view=diff|ref|html&crop=x,y,w,h */
@@ -76,6 +76,28 @@ export class HtmlPreview {
     this.root.dataset.scene = this.scene;
     if (this.dev) this.root.dataset.refview = this.dev.view; else delete this.root.dataset.refview;
     this.mark(this.locked?.label ?? null);
+  }
+
+  /**
+   * Click and drag on the viewport pans the view, so panels can be tested over moving geometry
+   * (translucency and blur). Panels sit above the viewport, so only the open viewport starts a pan.
+   */
+  startPan(event) {
+    const svg = event.target.closest?.('.pv-part');
+    if (!svg || this.inspect || event.button !== 0) return false;
+    const win = this.root.querySelector('.pv-scene'), world = svg.querySelector('.pv-world');
+    const zoom = win.getBoundingClientRect().width / win.offsetWidth;
+    const start = { x: event.clientX, y: event.clientY, px: this.state.pan.x, py: this.state.pan.y };
+    svg.setPointerCapture(event.pointerId);
+    svg.classList.add('panning');
+    const move = e => {
+      this.state.pan = { x: start.px + (e.clientX - start.x) / zoom, y: start.py + (e.clientY - start.y) / zoom };
+      world.setAttribute('transform', `translate(${this.state.pan.x} ${this.state.pan.y})`);
+    };
+    const end = () => { svg.removeEventListener('pointermove', move); svg.removeEventListener('pointerup', end); svg.removeEventListener('pointercancel', end); svg.classList.remove('panning'); };
+    svg.addEventListener('pointermove', move); svg.addEventListener('pointerup', end); svg.addEventListener('pointercancel', end);
+    event.preventDefault();
+    return true;
   }
 
   /** Drag a feature dialog by its header; the offset is kept so a re-render does not move it back. */

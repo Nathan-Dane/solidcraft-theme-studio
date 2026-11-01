@@ -45,7 +45,7 @@ export function appScene(kit, stage, state, dev) {
   const { zoom, w: W, h: H, tx, ty } = fit(stage, dev);
   const root = el('div', { class: 'pv-scene' });
   root.style.cssText = `width:${W}px;height:${H}px;transform:translate(${tx}px,${ty}px) scale(${zoom});transform-origin:0 0`;
-  root.append(part(t, W, H));
+  root.append(part(t, W, H, state.pan));
 
   root.append(kit.appBar(rect(0, 0, W, 38), state));
 
