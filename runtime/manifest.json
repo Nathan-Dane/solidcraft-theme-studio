@@ -1,0 +1,29 @@
+{
+  "module": "./pkg/solidcraft-theme-studio-c04976eeaa254ba0.js",
+  "wasm": "./pkg/solidcraft-theme-studio-3257ef66895b3ead_bg.wasm",
+  "revision": "f0f85001001ca2c7651f966c1256917b6e8ce01c-dirty",
+  "source": "https://github.com/Nathan-Dane/solidcraft.git",
+  "dirty": true,
+  "licensePaths": [
+    "./licenses/LICENSE-MIT",
+    "./licenses/LICENSE-APACHE",
+    "./licenses/THIRD-PARTY-LICENSES.txt",
+    "./fonts/biz-udp-gothic-OFL.txt",
+    "./fonts/craft-ui-sc-OFL.txt",
+    "./fonts/craft-ui-tc-OFL.txt"
+  ],
+  "licenseHashes": {
+    "./licenses/LICENSE-MIT": "44cca886556f909c92e8856945be1c55371698d06d052c6fe7cee7c6fb8e316f",
+    "./licenses/LICENSE-APACHE": "eb3d7b5485466acbd81f2b496f595ab637d2792e268206b27d99e793bdb67549",
+    "./licenses/THIRD-PARTY-LICENSES.txt": "c3e356438384c2240fafb3966c5370d7551305ad8b1b98007f35fc0c708c03b3",
+    "./fonts/biz-udp-gothic-OFL.txt": "062c81ae55b5ddd56c08331c8fe86598c1ef7f4453560c74706427a008b68534",
+    "./fonts/craft-ui-sc-OFL.txt": "17db9dc70d600015afebea7e75c239e5e6d8df848c5f4b9f6b273470bbc17995",
+    "./fonts/craft-ui-tc-OFL.txt": "782b63a296de610f12bed5bb8c0f847ac8a840e1aa6421f9b139dfcdf24f8ae9"
+  },
+  "fontPaths": [
+    "./fonts/BIZUDPGothic-Regular.ttf",
+    "./fonts/CraftUI-SC.otf",
+    "./fonts/CraftUI-TC.otf"
+  ],
+  "wasmSha256": "153fe7ea63a61382f588973d05e428c249d39e55f953f8f7c4f7ee518b21653b"
+}

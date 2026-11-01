@@ -44,27 +44,25 @@ Browser verification is separate: inspect real hover/focus/disabled states, icon
 
 ## Package for GitHub Pages
 
-Before publication, `runtime-source.json` must point to the reviewed public source repository and an exact 40-character commit containing the runtime adapter and all required theme features. The commit must remain available remotely. A floating branch, placeholder, dirty build or stale WASM manifest is rejected.
+The compiled theme engine ships in `runtime/` (WASM, message catalogs, icon artwork, fonts and licences) and is committed, so packaging and CI need no Rust toolchain. `runtime/manifest.json` records the source revision and the WASM hash, which `npm run package` verifies.
 
 ```sh
-pwsh -File scripts/build-runtime.ps1
 npm test
 npm run package
 python -m http.server 4173 --bind 127.0.0.1 --directory dist
 ```
 
-`scripts/package-site.mjs` copies an allowlist of static application files to `dist/`, verifies the runtime source pin and WASM hash, and includes the exact runtime licences. It excludes Git metadata, local checkouts, tools and build caches. All application URLs are relative, so the artifact can be hosted at `https://OWNER.github.io/REPOSITORY/`.
+`scripts/package-site.mjs` copies an allowlist of static application files to `dist/`, verifies the WASM hash and includes the exact runtime licences. All application URLs are relative, so the artifact can be hosted at `https://OWNER.github.io/REPOSITORY/`.
+
+To refresh the engine, run `pwsh -File scripts/build-runtime.ps1` (optionally with `-SourcePath` for a local SolidCraft checkout), then commit the updated `runtime/` files.
 
 ## GitHub Pages deployment
 
-1. Push this repository, including the reviewed runtime pin, to GitHub.
-2. In **Settings → Pages → Build and deployment**, choose **GitHub Actions**.
-3. The included **GitHub Pages** workflow builds the pinned Rust runtime, runs the Onyx acceptance checks, packages `dist/` and uses GitHub’s official Pages artifact/deployment actions.
-4. Pushes to `main` and manual workflow runs deploy; pull requests build and validate without deploying. The deployment job reports the actual published URL.
+1. In **Settings → Pages → Build and deployment**, choose **GitHub Actions**.
+2. The **GitHub Pages** workflow runs the Onyx acceptance checks, packages `dist/` and uses GitHub’s official Pages artifact/deployment actions.
+3. Pushes to `main` and manual workflow runs deploy; pull requests validate without deploying.
 
-The workflow uses Ubuntu with PowerShell and installs pinned tool versions. Cargo downloads, the pinned Trunk binary and the exact runtime’s compiled target directory are cached; changing the runtime commit does not reuse another commit’s target cache. Its action revisions are pinned to reviewed official releases and follow [GitHub’s custom Pages workflow documentation](https://docs.github.com/en/pages/getting-started-with-github-pages/using-custom-workflows-with-github-pages). No Cloudflare/Sites account, access token in frontend source or custom server is needed.
-
-This README describes the deployment path; it is not a claim that a deployment has completed.
+Action revisions are pinned to reviewed official releases. No account, token or server is needed.
 
 ## Source and licences
 

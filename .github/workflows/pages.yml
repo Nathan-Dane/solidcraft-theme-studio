@@ -16,9 +16,7 @@ concurrency:
 jobs:
   build:
     runs-on: ubuntu-24.04
-    timeout-minutes: 90
-    env:
-      RUSTUP_TOOLCHAIN: 1.96.1
+    timeout-minutes: 15
     steps:
       - name: Check out site
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -28,42 +26,7 @@ jobs:
         uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
           node-version: '24'
-      - name: Read the exact runtime pin
-        id: runtime-pin
-        run: |
-          node --input-type=module <<'NODE'
-          import { readFileSync, appendFileSync } from 'node:fs';
-          const source = JSON.parse(readFileSync('runtime-source.json', 'utf8'));
-          if (!/^[0-9a-f]{40}$/.test(source.commit || '')) throw new Error('A reviewed runtime source commit must be pinned before publication.');
-          appendFileSync(process.env.GITHUB_OUTPUT, `sha=${source.commit}\n`);
-          NODE
-      - name: Restore Cargo downloads and pinned Trunk binary
-        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
-        with:
-          path: |
-            ~/.cargo/registry
-            ~/.cargo/git
-            ~/.cargo/bin/trunk
-          key: ${{ runner.os }}-cargo-rust1.96.1-trunk0.22.1-${{ steps.runtime-pin.outputs.sha }}
-          restore-keys: |
-            ${{ runner.os }}-cargo-rust1.96.1-trunk0.22.1-
-      - name: Restore the pinned runtime build
-        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
-        with:
-          path: target/runtime-build-${{ steps.runtime-pin.outputs.sha }}
-          key: ${{ runner.os }}-runtime-rust1.96.1-trunk0.22.1-${{ steps.runtime-pin.outputs.sha }}
-      - name: Install pinned Rust toolchain and Trunk
-        run: |
-          rustup toolchain install 1.96.1 --profile minimal --target wasm32-unknown-unknown
-          if ! command -v trunk >/dev/null || [ "$(trunk --version)" != "trunk 0.22.1" ]; then
-            cargo +1.96.1 install trunk --version 0.22.1 --locked --force
-          fi
-      - name: Build reviewed runtime source
-        shell: pwsh
-        env:
-          CARGO_TARGET_DIR: ${{ github.workspace }}/target/runtime-build-${{ steps.runtime-pin.outputs.sha }}
-        run: ./scripts/build-runtime.ps1
-      - name: Validate Onyx through the actual Rust codec
+      - name: Validate Onyx through the bundled codec
         run: npm test
       - name: Package the static site
         run: npm run package

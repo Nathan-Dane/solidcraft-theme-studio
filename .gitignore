@@ -1,12 +1,6 @@
 /dist/
 /target/
 /node_modules/
-/runtime/pkg/
-/runtime/licenses/
-/runtime/fonts/
-/runtime/locales/
-/runtime/icons/
-/runtime/manifest.json
 *.log
 .DS_Store
 Thumbs.db
