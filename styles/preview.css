@@ -122,8 +122,6 @@
 .pv-dialog.dragging .pv-drag{cursor:grabbing}
 .pv-dialog.dragging{box-shadow:0 8px 24px var(--shadow)}
 .pv-field{background:var(--c-control-fill)}
-/* Ribbon search is an egui text edit: it uses the field token. */
-.pv-field.pv-search{background:var(--c-field)}
 .pv-mono{font-family:'Plex Mono',ui-monospace,monospace}
 .pv-btn{background:var(--c-control-fill)}
 .pv-dialog .pv-t{font-size:14px}.pv-dialog .pv-semibold.pv-fs17{font-size:17px}.pv-dialog .sec{font-size:13px;font-weight:700;letter-spacing:.07em}
@@ -135,3 +133,8 @@
 /* Text followed by the chevron icon. */
 .pv-lc{position:absolute;display:inline-flex;align-items:center;gap:2px;white-space:nowrap}
 .pv-lc .ic{margin-top:1px}
+
+/* Ribbon: section names highlight like commands; the search field is a control_fill field with a keycap. */
+.pv-glabel{position:absolute;border-radius:6px}.pv-glabel:hover{background:var(--c-hover)}
+.pv-field.pv-search{background:var(--c-control-fill);border-radius:8px}
+.pv-keycap{position:absolute;border:1px solid var(--c-control-border);border-radius:5px;background:transparent}

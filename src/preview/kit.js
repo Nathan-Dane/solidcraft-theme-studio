@@ -52,6 +52,13 @@ export class Kit {
     return node;
   }
 
+  /** Width of `text` in the preview's regular face at `size` px (what the cells size themselves by). */
+  measure(text, size, weight = 400) {
+    this._canvas ||= document.createElement('canvas').getContext('2d');
+    this._canvas.font = `${weight} ${size}px Plex, system-ui, sans-serif`;
+    return this._canvas.measureText(text).width;
+  }
+
   /** The kit's chevron icon centred at (cx, cy); the artwork points down, so right and up rotate it. */
   chevron(cx, cy, dir = 'down', color = null) {
     const node = this.icons.el('chevron', 16, { ink: color || this.t.c('text_dim') });
@@ -102,22 +109,37 @@ export class Kit {
       host.append(node);
     });
     host.append(this.iconAt('plus', 16, 902 - ox, 62 - oy, { ink: t.c('text_dim') }));
-    const searchLeft = 1091 - ox;
-    const search = tag(abs('pv-field pv-search', rect(searchLeft, 51 - oy, Math.max(width - 12 - searchLeft, 120), 24)), 'Search commands', ['field', 'control_border']);
-    search.append(this.iconAt('zoom', 14, 14, 12, { ink: t.c('form_dim') }), textAt('Search commands', 29, 12, 'dim pv-fs14'), textAt('S', 8, 12, 'dim pv-fs14', 'right'));
+    // Search: a control_fill box (the form scope's field), the zoom icon, dim hint text and an S keycap.
+    const searchW = 174, searchLeft = width - 9 - searchW;
+    const search = tag(abs('pv-field pv-search', rect(searchLeft, 51 - oy, searchW, 28)), 'Search commands', ['control_fill', 'control_border', 'form_dim']);
+    search.append(this.iconAt('zoom', 15, 13, 14, { ink: t.c('form_dim') }), textAt('Search commands', 28, 14, 'dim pv-fs15'));
+    const key = abs('pv-keycap', rect(searchW - 24, 4, 20, 20));
+    key.append(textAt('S', 10, 10, 'dim pv-fs13', 'center'));
+    search.append(key);
     host.append(search);
-    const centres = [[158], [240, 305, 371], [443, 509, 575, 645], [735, 812, 878], [960, 1048], [1146]];
-    const groupCentre = [158, 304, 540, 793, 987, 1139];
+    // Commands: every cell is a full-height box (icon and label) with the same gap to its neighbours.
+    // Each section ends with a separator, including after the last one.
+    const cellGap = 3.5, padRight = [1, 5, 6.5, 4, 4.5, 4.5];
+    let x = 114;
     groups.forEach(([group, tools], g) => {
-      tools.forEach(([icon, label], k) => {
-        const cx = centres[g][k] - ox, on = label === 'Extrude';
-        const cell = tag(abs(`pv-tool${on ? ' on' : ''}`, rect(cx - 31, 82 - oy, 62, 68)), label, ['icon_palette.solid', 'icon_palette.line', 'selected_bg', 'hover']);
-        cell.append(this.iconAt(icon, 27, 31, 17.5), textAt(label, 31, 45, 'pv-fs14', 'center'));
+      const start = x;
+      tools.forEach(([icon, label]) => {
+        const w = Math.max(62, this.measure(label, 14) + 15), on = label === 'Extrude';
+        const cell = tag(abs(`pv-tool${on ? ' on' : ''}`, rect(x - ox, 82 - oy, w, 68)), label, ['icon_palette.solid', 'icon_palette.line', 'selected_bg', 'hover']);
+        cell.append(this.iconAt(icon, 27, w / 2, 17.5), textAt(label, w / 2, 45, 'pv-fs14', 'center'));
         host.append(cell);
+        x += w + cellGap;
       });
-      host.append(this.labelChevron(group, groupCentre[g] - ox, 162 - oy, 'dim pv-fs14'));
+      x -= cellGap;
+      const centre = (start + x) / 2;
+      const lw = this.measure(group, 14) + 14 + 2 + 20;
+      const pill = tag(abs('pv-glabel', rect(centre - lw / 2 - ox, 151 - oy, lw, 22)), group, ['text_dim', 'hover']);
+      pill.append(this.labelChevron(group, lw / 2, 11, 'dim pv-fs14'));
+      host.append(pill);
+      x += padRight[g];
+      host.append(abs('pv-sep', rect(x - ox, 86 - oy, 1, 86)));
+      x += 1 + 5;
     });
-    [406, 687, 913, 1096].forEach(x => host.append(abs('pv-sep', rect(x - ox, 86 - oy, 1, 86))));
   }
 
   /** The Browser panel: title row and the document tree. */
