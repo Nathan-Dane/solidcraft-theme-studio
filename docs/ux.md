@@ -2,9 +2,11 @@
 
 ## Design direction
 
-Theme Studio is a workbench, not a marketing page. Paper, restrained mint, warm accent details and IBM Plex typography keep the authoring chrome calm. That chrome stays independent of the authored theme so an experimental palette cannot make its own editor unreadable.
+Theme Studio is a workbench, not a marketing page. A neutral graphite and white chrome, one restrained blue accent and IBM Plex typography keep the authoring surface calm. That chrome stays independent of the authored theme so an experimental palette cannot make its own editor unreadable.
 
-The desktop layout keeps a narrow editor beside an interactive preview board. Category navigation and document actions remain visible. On small screens, the preview remains above the editor with a scene selector rather than squeezing a complete CAD app into a thumbnail. The real runtime owns scene layout and interactions.
+The desktop layout is a **stage and dock**. A vertical category rail and an editing dock sit beside the preview stage. The dock has three widths: normal, wide (two or three columns of grouped cards) and rail-only. The stage can also be expanded to hide the dock entirely. Related controls share one card: all corner radii sit together, each palette group is one card of colour tiles, and nothing inside a group is ruled apart.
+
+Scenes are chosen from a tab strip above the canvas (keys 0–6 when focus is outside a field or the canvas). "All scenes" is the overview; each other tab shows one real runtime scene at full size. "Try this theme" is a popover so option changes never resize the GPU canvas. On small screens, the preview remains above the editor rather than squeezing a complete CAD app into a thumbnail. The real runtime owns scene layout and interactions; the shell never draws or fakes preview content.
 
 ## Core flows
 

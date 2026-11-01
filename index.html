@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
-  <meta name="theme-color" content="#f5f5ef">
+  <meta name="theme-color" content="#14181d">
   <meta name="description" content="A material playground for creating, editing and previewing SolidCraft themes with the real SolidCraft interface.">
   <title>Theme Studio · SolidCraft</title>
   <link rel="stylesheet" href="./styles/studio.css">
@@ -11,31 +11,72 @@
 <body>
   <a class="skip-link" href="#editor-title">Skip to theme editor</a>
   <header class="app-header">
-    <a class="brand" href="./" aria-label="SolidCraft Theme Studio home"><span class="brand-mark" aria-hidden="true"><i></i><i></i><i></i><i></i></span><span>SolidCraft <strong>Theme Studio</strong></span><span class="studio-label">a little colour, a lot of craft</span></a>
-    <div class="header-actions"><button id="import-button" class="button secondary">Import theme</button><button id="export-button" class="button primary" disabled>Export .json <span aria-hidden="true">↗</span></button></div>
+    <a class="brand" href="./" aria-label="SolidCraft Theme Studio home"><span class="brand-mark" aria-hidden="true"><i></i><i></i><i></i><i></i></span><span class="brand-name">SolidCraft <strong>Theme Studio</strong></span></a>
+    <div class="document-bar">
+      <div class="document-name"><span class="eyebrow">Theme</span><h1 id="document-title">Onyx</h1><span id="dirty-indicator" class="change-dot" hidden aria-label="Unsaved changes"></span></div>
+      <div class="history-actions">
+        <button id="undo-button" class="icon-button" aria-label="Undo" title="Undo (Ctrl or Command Z)" disabled><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M7.5 4.5 3.5 8.5l4 4M4 8.5h7a5 5 0 0 1 0 10H8"/></svg></button>
+        <button id="redo-button" class="icon-button" aria-label="Redo" title="Redo (Ctrl or Command Shift Z)" disabled><svg viewBox="0 0 20 20" aria-hidden="true"><path d="m12.5 4.5 4 4-4 4M16 8.5H9a5 5 0 0 0 0 10h3"/></svg></button>
+      </div>
+    </div>
+    <div class="header-actions"><span id="save-status" class="save-status">Preparing browser recovery…</span><button id="import-button" class="button secondary">Import</button><button id="export-button" class="button primary" disabled>Export .json</button></div>
     <input id="import-file" type="file" accept=".json,application/json" hidden>
   </header>
-  <main class="workspace">
+  <main class="workspace" id="workspace" data-dock="normal">
     <aside class="editor-shell" aria-label="Theme authoring">
-      <div class="document-heading"><div><span class="eyebrow">ON THE WORKBENCH</span><div class="document-name"><h1 id="document-title">Onyx</h1><span id="dirty-indicator" class="change-dot" hidden aria-label="Unsaved changes"></span></div></div><div class="history-actions"><button id="undo-button" class="icon-button" aria-label="Undo" title="Undo (Ctrl or Command Z)" disabled>↶</button><button id="redo-button" class="icon-button" aria-label="Redo" title="Redo (Ctrl or Command Shift Z)" disabled>↷</button></div></div>
-      <div class="editor-navigation" role="tablist" aria-label="Theme editing categories">
-        <button role="tab" aria-selected="true" data-section="overview">Overview</button><button role="tab" aria-selected="false" data-section="palette">Palette</button><button role="tab" aria-selected="false" data-section="surfaces">Shape & edges</button><button role="tab" aria-selected="false" data-section="icons">Icon colours</button><button role="tab" aria-selected="false" data-section="tabs">Workspaces</button><button role="tab" aria-selected="false" data-section="options">Options & rules</button><button role="tab" aria-selected="false" data-section="source">Source</button>
+      <div class="editor-navigation" role="tablist" aria-orientation="vertical" aria-label="Theme editing categories">
+        <button role="tab" aria-selected="true" data-section="overview"><svg viewBox="0 0 20 20" aria-hidden="true"><rect x="3" y="3" width="6" height="6" rx="1.5"/><rect x="11" y="3" width="6" height="6" rx="1.5"/><rect x="3" y="11" width="6" height="6" rx="1.5"/><rect x="11" y="11" width="6" height="6" rx="1.5"/></svg><span>Overview</span></button>
+        <button role="tab" aria-selected="false" data-section="palette"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M10 3c4.4 0 7 2.8 7 6 0 2.2-1.8 3-3.3 3-1.4 0-2 .5-2 1.4 0 1 .8 1.3.8 2.1 0 .8-.8 1.5-2.5 1.5C5.9 17 3 14 3 10 3 6 6 3 10 3Z"/><circle cx="6.8" cy="9.2" r=".9"/><circle cx="9.5" cy="6.6" r=".9"/><circle cx="13" cy="7.6" r=".9"/></svg><span>Palette</span></button>
+        <button role="tab" aria-selected="false" data-section="surfaces"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M3 8V6a3 3 0 0 1 3-3h2M12 3h2a3 3 0 0 1 3 3v2M17 12v2a3 3 0 0 1-3 3h-2M8 17H6a3 3 0 0 1-3-3v-2"/></svg><span>Shape &amp; edges</span></button>
+        <button role="tab" aria-selected="false" data-section="icons"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="m10 3 2 4.2 4.6.6-3.3 3.2.8 4.6L10 13.4l-4.1 2.2.8-4.6L3.4 7.800 8 7.200 10 3Z"/></svg><span>Icon colours</span></button>
+        <button role="tab" aria-selected="false" data-section="tabs"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M3 7h14v9a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V7Zm0 0V5a1 1 0 0 1 1-1h4l1.500 3"/></svg><span>Workspaces</span></button>
+        <button role="tab" aria-selected="false" data-section="options"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M3 6h9M16 6h1M3 14h1M8 14h9"/><circle cx="14" cy="6" r="2"/><circle cx="6" cy="14" r="2"/></svg><span>Options &amp; rules</span></button>
+        <button role="tab" aria-selected="false" data-section="source"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="m7 6-4 4 4 4M13 6l4 4-4 4M11.500 4l-3 12"/></svg><span>Source</span></button>
       </div>
-      <div id="validation-banner" class="validation-banner" role="status" hidden></div>
-      <section id="editor" class="editor-content" role="tabpanel" aria-labelledby="editor-title"><div class="section-heading"><span class="eyebrow">MAKE IT YOURS</span><h2 id="editor-title" tabindex="-1">A good place to start.</h2><p>Start with Onyx, import a theme, or make something completely your own.</p></div><div class="loading-note">Preparing the theme editor…</div></section>
-      <footer class="editor-footer"><span id="save-status">Preparing browser recovery…</span><button id="reset-button" class="text-button">Start fresh</button></footer>
+      <div class="dock-panel">
+        <div class="dock-bar">
+          <span class="dock-title" id="dock-title">Overview</span>
+          <div class="dock-actions">
+            <button id="dock-widen" class="icon-button" type="button" aria-pressed="false" aria-label="Widen editor" title="Widen editor"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M3 10h14M6.500 6.500 3 10l3.500 3.500M13.500 6.500 17 10l-3.500 3.500"/></svg></button>
+            <button id="dock-collapse" class="icon-button" type="button" aria-label="Collapse editor" title="Collapse editor"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M12 5 7 10l5 5"/></svg></button>
+          </div>
+        </div>
+        <div id="validation-banner" class="validation-banner" role="status" hidden></div>
+        <section id="editor" class="editor-content" role="tabpanel" aria-labelledby="editor-title"><div class="section-heading"><span class="eyebrow">MAKE IT YOURS</span><h2 id="editor-title" tabindex="-1">A good place to start.</h2><p>Start with Onyx, import a theme, or make something completely your own.</p></div><div class="loading-note">Preparing the theme editor…</div></section>
+        <footer class="editor-footer"><span>Edits apply to the preview instantly</span><button id="reset-button" class="text-button">Start fresh</button></footer>
+      </div>
     </aside>
     <section class="preview-shell" aria-label="Live SolidCraft previews">
-      <div class="preview-heading"><div><span class="eyebrow">THE REAL THING, IN SMALL PIECES</span><h2>See how it feels<span class="accent-period">.</span></h2></div><div class="preview-tools"><button id="inspect-button" class="button compact" aria-pressed="false" title="Inspect the theme roles behind a preview element" disabled>Inspect</button><button id="compare-button" class="button compact" aria-pressed="false" disabled>Pin comparison</button></div></div>
-      <div class="preview-context"><div class="context-group"><span class="context-label">Workspace</span><select id="workspace-select" aria-label="Preview workspace"><option>MODEL</option><option>SURFACE</option><option>MESH</option><option>FORM</option><option>SHEET METAL</option><option>RENDER</option><option>SKETCH</option><option>ASSEMBLE</option><option>INSERT</option><option>INSPECT</option><option>MANAGE</option><option>VIEW</option><option>WELDMENTS</option></select></div><div class="context-group"><span class="context-label">Vision</span><select id="vision-select" aria-label="Colour vision preview"><option value="off">Standard</option><option value="protan">Protan</option><option value="deutan">Deutan</option><option value="tritan">Tritan</option></select></div><div class="context-group scene-context"><span class="context-label">Scene</span><select id="scene-select" aria-label="Preview scene" disabled><option value="all">All scenes</option><option value="tools">Tools & tabs</option><option value="browser">Browser & history</option><option value="controls">Feature controls</option><option value="glass">Glass & menus</option><option value="viewport">Viewport details</option><option value="icons">Icon lab</option></select></div><div id="language-context" class="context-group language-context" hidden><span class="context-label">Labels</span><select id="language-select" aria-label="Preview label language" disabled></select></div><span id="engine-status" class="engine-badge"><span></span>Starting the SolidCraft engine</span></div>
-      <details class="try-options" open><summary><span>Try this theme</span><span class="quiet">Preview values · your defaults stay put</span></summary><div id="preview-options" class="preview-option-controls"><span class="quiet">Theme options will appear here.</span></div></details>
-      <div id="preview-stage" class="preview-stage"><canvas id="solidcraft-theme-preview" tabindex="0" aria-label="Interactive SolidCraft component previews"></canvas><div id="engine-loading" class="engine-loading"><span class="loading-shape" aria-hidden="true"></span><h3>Bringing the little details to life.</h3><p>Loading SolidCraft’s real interface, fonts and icons.</p><div class="loading-scene-list"><span>Tools & tabs</span><span>Browser & history</span><span>Controls</span><span>Glass & menus</span><span>Viewport</span><span>Icon lab</span></div><p id="engine-loading-detail" class="quiet">Your theme files stay on this device.</p></div></div>
-      <div id="inspection-panel" class="inspection-panel" hidden aria-live="polite"></div>
+      <div class="stage-bar">
+        <div class="scene-tabs" role="group" aria-label="Preview scene">
+          <button type="button" data-scene="all" aria-pressed="true" title="Every scene on one board">All scenes</button>
+          <button type="button" data-scene="tools" aria-pressed="false" title="Tabs, semantic tool colours and navigation controls">Tools &amp; tabs</button>
+          <button type="button" data-scene="browser" aria-pressed="false" title="Fold, hide, select and inspect the actual dense rows">Browser &amp; history</button>
+          <button type="button" data-scene="controls" aria-pressed="false" title="Actual fields, sliders, disabled states and theme options">Feature controls</button>
+          <button type="button" data-scene="glass" aria-pressed="false" title="Real menus, submenus, tooltips and a modal over detailed content">Glass &amp; menus</button>
+          <button type="button" data-scene="viewport" aria-pressed="false" title="Production grid, dimensions, snap markers and cube">Viewport</button>
+          <button type="button" data-scene="icons" aria-pressed="false" title="Original SVG geometry, knockout, masks and optical variants">Icon lab</button>
+        </div>
+        <select id="scene-select" aria-label="Preview scene" disabled hidden><option value="all">All scenes</option><option value="tools">Tools &amp; tabs</option><option value="browser">Browser &amp; history</option><option value="controls">Feature controls</option><option value="glass">Glass &amp; menus</option><option value="viewport">Viewport details</option><option value="icons">Icon lab</option></select>
+        <div class="preview-tools"><button id="inspect-button" class="button compact" aria-pressed="false" title="Inspect the theme roles behind a preview element" disabled>Inspect</button><button id="compare-button" class="button compact" aria-pressed="false" disabled>Pin comparison</button><button id="stage-focus" class="icon-button" type="button" aria-pressed="false" aria-label="Expand preview" title="Expand preview (hide editor)"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M3 8V3h5M12 3h5v5M17 12v5h-5M8 17H3v-5"/></svg></button></div>
+      </div>
+      <div class="preview-context">
+        <div class="context-group"><span class="context-label">Workspace</span><select id="workspace-select" aria-label="Preview workspace"><option>MODEL</option><option>SURFACE</option><option>MESH</option><option>FORM</option><option>SHEET METAL</option><option>RENDER</option><option>SKETCH</option><option>ASSEMBLE</option><option>INSERT</option><option>INSPECT</option><option>MANAGE</option><option>VIEW</option><option>WELDMENTS</option></select></div>
+        <div class="context-group"><span class="context-label">Vision</span><select id="vision-select" aria-label="Colour vision preview"><option value="off">Standard</option><option value="protan">Protan</option><option value="deutan">Deutan</option><option value="tritan">Tritan</option></select></div>
+        <div id="language-context" class="context-group language-context" hidden><span class="context-label">Labels</span><select id="language-select" aria-label="Preview label language" disabled></select></div>
+        <details class="try-options"><summary><span>Try this theme</span></summary><div class="try-popover"><p class="try-note">Preview values only. Your theme’s defaults stay put.</p><div id="preview-options" class="preview-option-controls"><span class="quiet">Theme options will appear here.</span></div></div></details>
+        <span id="engine-status" class="engine-badge"><span></span>Starting the SolidCraft engine</span>
+      </div>
+      <div class="stage-wrap">
+        <div id="preview-stage" class="preview-stage"><canvas id="solidcraft-theme-preview" tabindex="0" aria-label="Interactive SolidCraft component previews"></canvas><div id="engine-loading" class="engine-loading"><span class="loading-shape" aria-hidden="true"></span><h3>Bringing the little details to life.</h3><p>Loading SolidCraft’s real interface, fonts and icons.</p><div class="loading-scene-list"><span>Tools &amp; tabs</span><span>Browser &amp; history</span><span>Controls</span><span>Glass &amp; menus</span><span>Viewport</span><span>Icon lab</span></div><p id="engine-loading-detail" class="quiet">Your theme files stay on this device.</p></div></div>
+        <div id="inspection-panel" class="inspection-panel" hidden aria-live="polite"></div>
+      </div>
       <footer class="preview-footer"><span id="preview-live-status"><span class="live-dot pending"></span>Loading the real SolidCraft preview</span><button id="about-button" class="text-button">About the preview</button></footer>
     </section>
   </main>
   <div id="notice" class="notice" role="status" aria-live="polite" hidden></div>
   <dialog id="about-dialog"><form method="dialog"><button class="icon-button dialog-close" aria-label="Close">×</button><span class="eyebrow">BUILT FROM SOLIDCRAFT</span><h2>Small scenes. Real details.</h2><p>The preview uses SolidCraft’s theme resolver, UI components, font files and original SVG icon renderer. Hover and keyboard focus are real widget states.</p><p>Preview values are separate from your theme’s authored defaults. Export keeps your options, rules, tab colours and metadata.</p><dl id="renderer-diagnostics" class="renderer-diagnostics"><div><dt>Theme tools</dt><dd>Loading</dd></div><div><dt>Preview</dt><dd>Waiting for the renderer</dd></div></dl><details class="diagnostic-details"><summary>Rendering details</summary><pre id="renderer-counters">No frame has been reported yet.</pre></details><p id="runtime-version" class="quiet"></p><p><a href="./docs/coverage.md">Preview coverage</a> · <a href="./ATTRIBUTION.md">Credits</a> · <a href="./runtime/licenses/THIRD-PARTY-LICENSES.txt">Runtime licences</a></p><button class="button primary">Back to making things</button></form></dialog>
+  <script type="module" src="./src/shell.js"></script>
   <script type="module" src="./src/app.js"></script>
 </body>
 </html>
