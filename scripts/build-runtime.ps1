@@ -92,6 +92,19 @@ try {
             if ($group -eq 'small') { $iconIndex.small[$id] = "small/$($file.Name)" } else { $iconIndex.masters[$id] = "$group/$($file.Name)" }
         }
     }
+    # Real SolidCraft artwork newer than the pinned source (for example the workspace marks). Pinned
+    # artwork always wins, and a master is only added where the pinned source has none.
+    $supplement = Join-Path $projectRoot 'assets/icons-supplement'
+    if (Test-Path -LiteralPath $supplement) {
+        foreach ($groupDir in Get-ChildItem -LiteralPath $supplement -Directory) {
+            New-Item -ItemType Directory -Force -Path (Join-Path $iconsDir $groupDir.Name) | Out-Null
+            foreach ($file in Get-ChildItem -LiteralPath $groupDir.FullName -Filter '*.svg') {
+                if ($iconIndex.masters.Contains($file.BaseName)) { continue }
+                Copy-Item -LiteralPath $file.FullName -Destination (Join-Path $iconsDir $groupDir.Name) -Force
+                $iconIndex.masters[$file.BaseName] = "$($groupDir.Name)/$($file.Name)"
+            }
+        }
+    }
     $iconIndex | ConvertTo-Json -Depth 4 | Set-Content -LiteralPath (Join-Path $iconsDir 'index.json') -Encoding utf8NoBOM
     $fontDir = Join-Path $runtimeDir 'fonts'
     New-Item -ItemType Directory -Force -Path $fontDir | Out-Null

@@ -19,10 +19,12 @@ function text(path) {
 
 /** Resolve an icon id to its master, default accent ramp and artwork file. */
 function resolve(name, size) {
-  const entry = index?.icons?.[name];
-  if (!entry || !files) return null;
+  if (!files) return null;
+  // The codec knows the pinned source's ids; artwork supplied later is a master of its own name.
+  const entry = index?.icons?.[name] ?? (files.masters[name] ? [name, ''] : null);
+  if (!entry) return null;
   const [master, accent] = entry;
-  const small = index.small.includes(master) && size <= 24 ? files.small[master] : null;
+  const small = index?.small?.includes(master) && size <= 24 ? files.small[master] : null;
   const path = small || files.masters[master];
   return path ? { path, accent: accent || '' } : null;
 }

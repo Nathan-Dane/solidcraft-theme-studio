@@ -52,7 +52,7 @@ export function appScene(kit, stage, state, dev) {
   const rowTop = 38 + M, rowH = 135;
   const workspace = card('chrome', rect(M, rowTop, 101, rowH));
   tag(workspace, 'Workspace switcher', ['panel', 'border']);
-  workspace.append(abs('pv-accent-bar', rect(12, 0, 77, 3)), kit.designGlyph(36, 49, 36), textAt('Design', 49, 79, 'pv-semibold pv-heading', 'center'), kit.labelChevron('Workspace', 49, 102, 'pv-body dim'));
+  workspace.append(abs('pv-accent-bar', rect(12, 0, 77, 3)), kit.iconAt('ws_design', 36, 49, 36), textAt('Design', 49, 79, 'pv-semibold pv-heading', 'center'), kit.labelChevron('Workspace', 49, 102, 'pv-body dim'));
   const ribbonX = M + 101 + M;
   const ribbon = card('chrome', rect(ribbonX, rowTop, W - M - ribbonX, rowH));
   tag(ribbon, 'Ribbon', ['panel', 'border']);

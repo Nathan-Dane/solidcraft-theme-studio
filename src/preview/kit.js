@@ -59,16 +59,6 @@ export class Kit {
     return node;
   }
 
-  /**
-   * The Design workspace's mark (a set-square and pencil). The pinned icon set has no `ws_design`
-   * artwork yet, so this is drawn from the same icon roles (line and the blue accent ramp).
-   */
-  designGlyph(size, cx, cy) {
-    const ramp = this.t.icons.accents[''] || {}, line = ramp.line || this.t.c('icon'), blue = ramp['active-3'] || '#4da7ff', pale = ramp['active-1'] || '#82c1ff';
-    const node = svg(size, size, `<g transform="scale(${size / 64})"><path d="M9 53V21l32 32z" fill="none" stroke="${line}" stroke-width="4.5" stroke-linejoin="round"/><path d="M17 45v-9l9 9z" fill="none" stroke="${line}" stroke-width="3" stroke-linejoin="round"/><path d="M30 38 48 12l8 6-18 26z" fill="${blue}"/><path d="M30 38l-2 9 9-3z" fill="${pale}"/></g>`, `left:${px(cx - size / 2)};top:${px(cy - size / 2)}`);
-    return node;
-  }
-
   /** Text followed by the chevron icon, centred on or right-aligned to x (never a text glyph). */
   labelChevron(text, x, cy, className = '', align = 'center') {
     const node = el('div', { class: `pv-lc ${className}` }, el('span', { class: 'pv-t' }, text));
@@ -90,11 +80,13 @@ export class Kit {
     const tab = abs('pv-bartab', rect(347, 4, 133, 27));
     tab.append(textAt('Sample Plate', 9, 13.5, 'pv-semibold bar pv-fs15'), this.iconAt('close', 12, 117, 13.5, { ink }));
     bar.append(tab, this.iconAt('plus', 16, 499, cy, { ink }));
-    [822, 861, 900].forEach((x, i) => bar.append(this.iconAt(['bug_report', 'settings', 'help'][i], 20, x, cy, { ink })));
-    const bug = abs('pv-bug', rect(922, 4, 146, 28));
+    const rx = r.w - 1276;
+    [822, 861, 900].forEach((x, i) => bar.append(this.iconAt(['bug_report', 'settings', 'help'][i], 20, x + rx, cy, { ink })));
+    const bug = abs('pv-bug', rect(922 + rx, 4, 146, 28));
     bug.append(this.iconAt('bug_report', 16, 15, 14, { ink }), textAt('Report a bug', 32, 14, 'bar pv-fs14'));
-    bar.append(bug, textAt('v0.28.0', 1078, cy, 'dim pv-fs14'));
-    bar.append(abs('pv-wc', rect(1156, 18, 12, 1)), abs('pv-wc box', rect(1195, 13, 11, 11)), svg(14, 14, `<path d="M1 1l12 12M13 1L1 13" stroke="${ink}" stroke-width="1.4"/>`, `left:${px(1245)};top:${px(cy - 7)}`));
+    bar.append(bug, textAt('v0.28.0', 1078 + rx, cy, 'dim pv-fs14'));
+    const caption = (kind, cx) => svg(14, 14, { min: '<path d="M2 7h10"/>', max: '<rect x="2" y="2" width="10" height="10"/>', close: '<path d="M2 2l10 10M12 2L2 12"/>' }[kind], `left:${px(cx - 7)};top:${px(cy - 7)};fill:none;stroke:${ink};stroke-width:1`);
+    bar.append(caption('min', r.w - 114), caption('max', r.w - 76), caption('close', r.w - 24));
     return bar;
   }
 
@@ -109,10 +101,10 @@ export class Kit {
       node.append(textAt(name, tabWidths[i] / 2, 13.5, `pv-fs14${on ? ' pv-semibold' : ''}`, 'center'));
       host.append(node);
     });
-    host.append(textAt('+', 902 - ox, 62 - oy, 'dim pv-fs17', 'center'));
+    host.append(this.iconAt('plus', 16, 902 - ox, 62 - oy, { ink: t.c('text_dim') }));
     const searchLeft = 1091 - ox;
     const search = tag(abs('pv-field pv-search', rect(searchLeft, 51 - oy, Math.max(width - 12 - searchLeft, 120), 24)), 'Search commands', ['field', 'control_border']);
-    search.append(svg(14, 14, `<circle cx="6" cy="6" r="4.2" fill="none" stroke="${t.c('text_dim')}" stroke-width="1.5"/><path d="M9.2 9.2L13 13" stroke="${t.c('text_dim')}" stroke-width="1.5"/>`, 'left:7px;top:5px'), textAt('Search commands', 29, 12, 'dim pv-fs14'), textAt('S', 8, 12, 'dim pv-fs14', 'right'));
+    search.append(this.iconAt('zoom', 14, 14, 12, { ink: t.c('form_dim') }), textAt('Search commands', 29, 12, 'dim pv-fs14'), textAt('S', 8, 12, 'dim pv-fs14', 'right'));
     host.append(search);
     const centres = [[158], [240, 305, 371], [443, 509, 575, 645], [735, 812, 878], [960, 1048], [1146]];
     const groupCentre = [158, 304, 540, 793, 987, 1139];
@@ -204,13 +196,9 @@ export class Kit {
     host.classList.add('pv-dialog');
     host.append(abs('pv-dhead', rect(0, 0, r.w - 2, headH)), abs('pv-dfoot', rect(0, r.h - 2 - footH, r.w - 2, footH)));
     const grip = abs('pv-drag', rect(0, 0, r.w - 2, headH)); grip.dataset.drag = '1';
-    host.append(this.iconAt(icon, 24, 24, 23), textAt(title, 45, 23, 'pv-semibold pv-fs17'), this.closeX(r.w - 23, 23), grip);
+    host.append(this.iconAt(icon, 24, 24, 23), textAt(title, 45, 23, 'pv-semibold pv-fs17'), this.iconAt('close', 16, r.w - 23, 23, { ink: this.t.c('text') }), grip);
     host.append(abs('pv-rule full', rect(0, headH - 1, r.w - 2, 1)), abs('pv-rule full', rect(0, r.h - 2 - footH, r.w - 2, 1)));
     return host;
-  }
-
-  closeX(cx, cy) {
-    return svg(14, 14, `<path d="M2 2l10 10M12 2L2 12" stroke="${this.t.c('text')}" stroke-width="1.4" stroke-linecap="round"/>`, `left:${px(cx - 7)};top:${px(cy - 7)}`);
   }
 
   /** A label and its control on one form row: the label is vertically centred on the control. */
@@ -276,9 +264,16 @@ export class Kit {
     return node;
   }
 
+  /** The history transport glyphs, ported from the app's glyph source (tri/bar geometry around the centre). */
   transport(name) {
-    const shapes = { first: 'M4 4h2v12H4zM16 4v12L7 10z', back: 'M14 4v12L5 10z', play: 'M5 3l12 7L5 17z', forward: 'M6 4v12l9-6z', last: 'M14 4h2v12h-2zM4 4l9 6-9 6z' };
-    return svg(20, 20, `<path d="${shapes[name]}" fill="${this.t.c('text')}"/>`, 'left:4px;top:4px');
+    const col = this.t.c('icon'), c = 14;
+    const tri = (dir, dx) => `<polygon points="${c + dx - 4 * dir},${c - 5} ${c + dx + 4 * dir},${c} ${c + dx - 4 * dir},${c + 5}" fill="${col}"/>`;
+    const bar = dx => `<line x1="${c + dx}" y1="${c - 5}" x2="${c + dx}" y2="${c + 5}" stroke="${col}" stroke-width="1.6"/>`;
+    const shapes = {
+      first: bar(-5) + tri(-1, 1), back: tri(-1, 0), forward: tri(1, 0), last: tri(1, -1) + bar(5),
+      play: `<polygon points="${c - 4.5},${c - 7} ${c + 6.5},${c} ${c - 4.5},${c + 7}" fill="${col}"/>`
+    };
+    return svg(28, 28, shapes[name], 'left:0;top:0');
   }
 
   button(text, r, { primary = false, disabled = false } = {}) {
