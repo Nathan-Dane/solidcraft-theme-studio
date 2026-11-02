@@ -9,8 +9,8 @@ import { appScene, fit, REFERENCE } from './app-scene.js';
 export const APPEARANCE_REFERENCE = { w: 1458, h: 1009 };
 const DIALOG = { w: 1006, h: 872 };
 const HEAD = 47, FOOT = 55;
-// The scrolling page starts here, in dialog coordinates; page coordinates are dialog minus this.
-const PAGE = { x: 215, y: 47, w: 790, h: DIALOG.h - 2 - HEAD - FOOT };
+// The scrolling page starts here, in dialog coordinates (page coordinates are dialog minus this); its height follows the dialog's.
+const PAGE = { x: 215, y: 47, w: 790 };
 
 const NAV = [
   ['General', 'settings'],
@@ -196,10 +196,10 @@ function themeCarousel(kit, state, themes, selectedName, y) {
   return nodes;
 }
 
-function page(kit, state) {
+function page(kit, state, size) {
   const t = kit.t, prefs = state.prefs, defs = state.options || [], values = state.optionValues || {};
   const body = el('div', { class: 'pv-ppage' });
-  body.style.cssText = `left:${PAGE.x}px;top:${PAGE.y}px;width:${PAGE.w}px;height:${PAGE.h}px`;
+  body.style.cssText = `left:${PAGE.x}px;top:${PAGE.y}px;width:${PAGE.w}px;height:${size.h - 2 - HEAD - FOOT}px`;
   const inner = el('div', { class: 'pv-ppage-in' });
   inner.style.height = '775px';
   body.append(inner);
@@ -233,8 +233,8 @@ function page(kit, state) {
   return body;
 }
 
-function nav(kit) {
-  const host = abs('pv-pnav', rect(0, 0, PAGE.x, DIALOG.h - 2));
+function nav(kit, size) {
+  const host = abs('pv-pnav', rect(0, 0, PAGE.x, size.h - 2));
   NAV.forEach((entry, i) => {
     const cy = NAV_Y[i];
     if (entry.length === 1) { host.append(text(entry[0], 20, cy, { size: 12, bold: true, dim: true, cls: 'sec' })); return; }
@@ -246,8 +246,8 @@ function nav(kit) {
   return host;
 }
 
-function profile(kit) {
-  const box = abs('pv-profile', rect(9, 750, 198, 54));
+function profile(kit, size) {
+  const box = abs('pv-profile', rect(9, size.h - 2 - 120, 198, 54));
   box.append(text('PROFILE', 40, 17, { size: 11, bold: true, dim: true, cls: 'sec' }), text('None', 40, 35, { bold: true }), kit.chevron(179, 27, 'down'));
   return box;
 }
@@ -265,9 +265,9 @@ function dialog(kit, state, rectangle) {
   search.append(key);
   host.append(search, kit.iconAt('close', 16, 979, 24, { ink: t.c('text') }));
   host.append(abs('pv-rule full', rect(0, HEAD - 1, rectangle.w - 2, 1)), abs('pv-rule full', rect(0, rectangle.h - 2 - FOOT, rectangle.w - 2, 1)));
-  host.append(nav(kit), profile(kit), page(kit, state));
+  host.append(nav(kit, rectangle), profile(kit, rectangle), page(kit, state, rectangle));
   const dirty = defs.some(def => (values[def.id] ?? def.default) !== def.default);
-  host.append(act(text('Restore page defaults', 14, 843, { size: 14 }), { act: 'defaults' }));
+  host.append(act(text('Restore page defaults', 14, rectangle.h - 2 - FOOT / 2, { size: 14 }), { act: 'defaults' }));
   const footY = rectangle.h - 2 - FOOT + 12;
   const cancel = act(kit.button('Cancel', rect(759, footY, 71, 32)), { act: 'noop' });
   const apply = act(kit.button('Apply', rect(837, footY, 62, 32), { disabled: !dirty }), { act: 'noop' });
@@ -277,11 +277,15 @@ function dialog(kit, state, rectangle) {
 }
 
 export function appearanceScene(kit, stage, state, dev) {
-  const view = { reference: APPEARANCE_REFERENCE, min: APPEARANCE_REFERENCE, dialog: false };
+  // The window is laid out and scaled exactly like the other scenes (their minimum size and zoom); only the dev
+  // comparison uses the larger window the reference screenshot was taken in.
+  const view = { reference: APPEARANCE_REFERENCE, dialog: false };
   const root = appScene(kit, stage, state, dev, 'app', view);
-  const { w: W, h: H } = fit(stage, dev, APPEARANCE_REFERENCE, APPEARANCE_REFERENCE);
+  const { w: W, h: H } = fit(stage, dev, APPEARANCE_REFERENCE);
+  // The dialog is its measured size when the window is tall enough, and otherwise gives up height (the page scrolls).
+  const h = Math.min(DIALOG.h, Math.max(780, H - 24));
   // Centred, with the small offset the real window shows (232, 62 in a 1458 x 1009 window).
-  const rectangle = rect(Math.round((W - DIALOG.w) / 2) + 6, Math.round((H - DIALOG.h) / 2) - 7, DIALOG.w, DIALOG.h);
+  const rectangle = rect(Math.max(8, Math.round((W - DIALOG.w) / 2) + 6), Math.round((H - h) / 2) - (h === DIALOG.h ? 7 : 0), DIALOG.w, h);
   const ref = root.querySelector('.pv-ref');
   root.append(dialog(kit, state, rectangle));
   if (ref) { ref.style.width = `${APPEARANCE_REFERENCE.w}px`; ref.style.height = `${APPEARANCE_REFERENCE.h}px`; root.append(ref); }
