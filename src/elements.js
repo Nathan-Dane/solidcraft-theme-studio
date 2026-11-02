@@ -3,6 +3,7 @@
 import { el, heading, button } from './dom.js';
 import { at } from './state.js';
 import { friendly, fallbackColor, radiusControl, borderCard, iconCards } from './authoring.js';
+import { sectionSweeps } from './overview.js';
 
 const LINES = {
   primary: 'The outline of panels, windows and cards.',
@@ -109,6 +110,7 @@ function groupCard(editor, group, known, open) {
     if (group.borders?.length) body.append(part('Lines', el('p', { class: 'field-help' }, 'Thickness and colour for each line, kept together.'), el('div', { class: 'card-grid' }, ...group.borders.map(role => borderCard(editor, role, LINES[role])))));
     if (group.icons) body.append(iconCards(editor, group.icons));
   };
+  details._refresh = () => { body.replaceChildren(); built = false; if (details.open) details._build(); };
   details.append(body);
   details.addEventListener('toggle', () => { if (details.open) details._build(); });
   if (open) details._build();
@@ -118,7 +120,7 @@ function groupCard(editor, group, known, open) {
 /** An element tab: filter chips over collapsible element groups. */
 export function elementEditor(editor, id) {
   const spec = SECTIONS[id], known = new Set(editor.keys('color'));
-  editor.root.append(heading(spec.eyebrow, spec.title, spec.intro));
+  editor.root.append(heading(spec.eyebrow, spec.title, spec.intro), sectionSweeps(editor, id));
   const facets = el('div', { class: 'palette-facets', 'aria-label': `${spec.title} parts` }), list = el('div');
   const cards = spec.groups.map((group, i) => groupCard(editor, group, known, i === 0));
   const show = facet => {
@@ -131,13 +133,15 @@ export function elementEditor(editor, id) {
       if (facet !== 'all' && match) { card.open = true; card._build(); }
     });
   };
-  list.append(...cards); editor.root.append(facets, list); show('all');
+  list.append(...cards); editor.root.append(el('h3', { class: 'small-heading' }, 'Fine-tune by element'), facets, list); show('all');
+  editor.afterSweep = () => cards.forEach(card => card._refresh());
   editor.root._reveal = groupId => { show('all'); const card = list.querySelector(`[data-group="${CSS.escape(groupId)}"]`); if (card) { card.open = true; card._build(); } };
 }
 
 /** Workspaces: the accent colours and the three surfaces each workspace tab can restyle. */
 export function workspaceEditor(editor) {
-  editor.root.append(heading('A CHANGE OF SCENERY', 'Workspaces.', 'Each workspace has its own accent. Optionally give it its own panel and viewport surfaces too, shown when Tab colours is on.'));
+  editor.root.append(heading('A CHANGE OF SCENERY', 'Workspaces.', 'Each workspace has its own accent. Optionally give it its own panel and viewport surfaces too, shown when Tab colours is on.'), sectionSweeps(editor, 'workspaces'), el('h3', { class: 'small-heading' }, 'Fine-tune by workspace'));
+  editor.afterSweep = () => editor.show();
   const doc = editor.store.get().document, known = new Set(editor.keys('color'));
   const authored = doc.tabs || {}, tabs = editor.contract.tabsAllowed || [], keys = editor.contract.tabSurfaceKeys || ['panel', 'viewport_top', 'viewport_bottom'];
   if (known.has('tab_on_fill_dark')) {

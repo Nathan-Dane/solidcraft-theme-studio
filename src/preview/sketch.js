@@ -50,7 +50,7 @@ export function sketchView(tokens, width, height, pan = { x: 0, y: 0 }) {
   // Constraint badges: a small framed glyph beside the edge it constrains.
   const badge = (x, y, glyph) => {
     const g = glyph === 'h' ? `<line x1="${x - 4}" y1="${y}" x2="${x + 4}" y2="${y}"/>` : glyph === 'v' ? `<line x1="${x}" y1="${y - 4.5}" x2="${x}" y2="${y + 4.5}"/>` : glyph === 'c' ? `<path d="M${x - 4} ${y + 3} L${x} ${y - 3} L${x + 4} ${y + 3}"/>` : `<line x1="${x - 4}" y1="${y - 2}" x2="${x + 4}" y2="${y - 2}"/><line x1="${x - 4}" y1="${y + 2}" x2="${x + 4}" y2="${y + 2}"/>`;
-    return `<rect x="${x - 9}" y="${y - 8}" width="18" height="16" rx="3" fill="${t.c('viewport_bottom')}" stroke="${bad}" stroke-width="1" fill-opacity=".92"/><g stroke="${bad}" stroke-width="1.5" fill="none">${g}</g>`;
+    return `<rect x="${x - 9}" y="${y - 8}" width="18" height="16" style="rx:var(--m-radius-sm)" fill="${t.c('viewport_bottom')}" stroke="${bad}" stroke-width="1" fill-opacity=".92"/><g stroke="${bad}" stroke-width="1.5" fill="none">${g}</g>`;
   };
   m += badge(X(40), Y(50) - 15, 'h') + badge(X(40), Y(0) - 15, 'h') + badge(X(0) - 15, Y(25), 'v') + badge(X(80) - 10, Y(35), 'v');
   m += badge(X(0) + 10, Y(0) - 12, 'c');

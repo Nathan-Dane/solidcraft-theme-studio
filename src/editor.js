@@ -2,18 +2,20 @@ import { el, field, heading, button } from './dom.js';
 import { at, put, pretty, clone } from './state.js';
 import { friendly, paletteEditor, optionsEditor } from './authoring.js';
 import { elementEditor, workspaceEditor, locate } from './elements.js';
+import { overviewEditor } from './overview.js';
 
 export class Editor {
   constructor(container, store, notify) { this.root = container; this.store = store; this.notify = notify; this.section = 'overview'; this.contract = {}; this.result = null; }
   setRuntime(contract, result) { this.contract = contract || {}; this.result = result; }
   show(section = this.section) {
     this.section = section;
+    this.release?.(); this.release = null; this.afterSweep = null;
     const state = this.store.get();
     this.root.replaceChildren();
     if (state.parseError && section !== 'source') {
       this.root.append(heading('A LITTLE REPAIR FIRST', 'Your draft needs a look.', 'There is a JSON syntax error. Your last valid preview is safe.'), el('div', { class: 'error-list' }, state.parseError), button('Open source', () => this.select('source'))); return;
     }
-    ({ overview: () => this.overview(), interface: () => elementEditor(this, 'interface'), viewport: () => elementEditor(this, 'viewport'), text: () => elementEditor(this, 'text'), workspaces: () => workspaceEditor(this), palette: () => paletteEditor(this), options: () => this.options(), source: () => this.source() }[section] || (() => this.overview()))();
+    ({ overview: () => overviewEditor(this), interface: () => elementEditor(this, 'interface'), viewport: () => elementEditor(this, 'viewport'), text: () => elementEditor(this, 'text'), workspaces: () => workspaceEditor(this), palette: () => paletteEditor(this), options: () => this.options(), source: () => this.source() }[section] || (() => this.overview()))();
   }
   select(section) { document.querySelector(`[data-section="${section}"]`)?.click(); }
   roleTarget(key) {
@@ -56,22 +58,6 @@ export class Editor {
       else if (Number.isFinite(input.valueAsNumber)) this.update(path, input.valueAsNumber, true);
     });
     input.addEventListener('blur', () => this.store.endTransaction()); return input;
-  }
-  overview() {
-    const doc = this.store.get().document;
-    this.root.append(heading('MAKE IT YOURS', 'A good place to start.', 'Give your theme a name. The little previews stay beside you as you make it your own.'));
-    this.root.append(field('Theme name', this.text(['name'], { maxlength: 80, placeholder: 'Something with character' })));
-    const base = el('select', {}, ...['dark', 'light'].map(value => el('option', { value }, value === 'dark' ? 'Dark foundation' : 'Light foundation'))); base.value = doc.base || 'dark';
-    base.addEventListener('change', () => this.update(['base'], base.value));
-    this.root.append(field('Foundation', base, 'Unspecified colours inherit from this SolidCraft palette.'));
-    const colors = doc.colors || {};
-    this.root.append(el('div', { class: 'swatch-strip', 'aria-label': 'Theme colour sample' }, ...['panel', 'viewport_top', 'accent', 'sheet_ink', 'error', 'text'].map(key => { const swatch = el('i', { title: key }); if (typeof colors[key] === 'string') swatch.style.backgroundColor = colors[key]; return swatch; })));
-    this.root.append(el('div', { class: 'note-card' }, el('h3', {}, 'Play with it. Keep the good bits.'), el('p', {}, 'Use “Try this theme” above the previews to explore the options. Those values do not change the defaults in your exported file.')));
-    this.root.append(field('Provenance', this.text(['provenance']), 'Credit the palette’s author or describe its origin.'));
-    this.root.append(el('div', { class: 'inline-row' }, field('Picker order', this.number(['order'], { step: 1 })), field('Required theme level', this.number(['requires'], { min: 0, step: 1 }))));
-    this.root.append(el('p', { class: 'field-help' }, 'Level 2 enables continuous surface brightness. Keep unknown metadata in Source; imports and exports preserve your authored document.'));
-    this.root.append(el('hr', { class: 'section-rule' }), el('h3', { class: 'small-heading' }, 'Choose your next brush'), el('div', { class: 'button-row' }, button('Style the interface', () => this.select('interface')), button('Build options', () => this.select('options')), button('See the source', () => this.select('source'))));
-    this.root.append(el('h3', { class: 'small-heading' }, 'Or start from a clean foundation'), el('div', { class: 'button-row' }, ...['dark', 'light'].map(base => button(`New ${base} theme`, () => { if (this.store.get().dirty && !confirm('Start a new theme? The current document stays available through Undo.')) return; this.store.replace({ format: this.contract.format || 'solidcraft-theme/1', name: 'Untitled theme', base }, false); }))));
   }
   keys(kind, authored = {}) {
     const declared = this.contract[`${kind}Keys`] || this.contract.keys?.[kind] || [];

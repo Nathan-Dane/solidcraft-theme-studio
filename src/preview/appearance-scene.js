@@ -55,7 +55,7 @@ function thumb(theme) {
     const light = THEMES[0], dark = THEMES[1];
     svg.innerHTML = `<defs><clipPath id="pv-half"><rect width="44" height="54"/></clipPath></defs>${draw(dark)}<g clip-path="url(#pv-half)">${draw(light)}</g>`;
   } else svg.innerHTML = draw(theme);
-  svg.style.cssText = 'position:absolute;left:5px;top:7px;border-radius:5px';
+  svg.style.cssText = 'position:absolute;left:5px;top:7px;border-radius:max(0px,calc(var(--m-radius-lg) - 3px))';
   return svg;
 }
 

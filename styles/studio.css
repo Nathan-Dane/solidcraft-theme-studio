@@ -338,3 +338,90 @@ dialog p{font-size:13px;line-height:1.65;color:var(--muted)}
 .element-colors .token-card>.alpha-row>span{display:none}
 .element-colors .token-card>.alpha-row output{min-width:30px}
 .element-colors .token-card .token-input-row input[type=color]{width:30px;height:30px}
+
+/* ---- Overview ---- */
+.ov-section{margin:0 0 26px}
+.ov-section>.small-heading{margin-top:0}
+.ov-name{width:100%;margin:2px 0 12px;padding:10px 12px;font:inherit;font-size:18px;font-weight:600;color:var(--ink);background:var(--panel);border:1px solid var(--line-strong);border-radius:var(--radius)}
+.ov-line{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:6px}
+.ov-segment{display:inline-flex;padding:3px;gap:2px;border:1px solid var(--line);border-radius:var(--radius);background:var(--soft)}
+.ov-segment button{padding:6px 12px;font:inherit;font-size:12.5px;color:var(--muted);background:transparent;border:0;border-radius:6px;cursor:pointer}
+.ov-segment button:hover{color:var(--ink)}
+.ov-segment button[aria-pressed=true],.ov-segment button[aria-selected=true]{color:var(--ink);font-weight:600;background:var(--panel);box-shadow:var(--shadow-sm)}
+.ov-strip{display:inline-flex;gap:3px;padding:3px;border:1px solid var(--line);border-radius:var(--radius);background:var(--panel)}
+.ov-strip i{display:block;width:26px;height:22px;border-radius:4px;border:1px solid #14181d14}
+.ov-strip.small i{width:14px;height:14px;border-radius:3px}.ov-strip.small{padding:2px;gap:2px}
+.template-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px;margin-top:10px}
+.template-card{display:flex;flex-direction:column;align-items:flex-start;gap:6px;padding:10px;text-align:left;font:inherit;color:var(--ink);background:var(--panel);border:1px solid var(--line);border-radius:var(--radius-lg);cursor:pointer}
+.template-card:hover{border-color:var(--accent-line);background:var(--accent-soft)}
+.template-card .ov-strip{align-self:stretch;padding:2px}.template-card .ov-strip i{flex:1;width:auto;height:26px}
+.template-card strong{font-size:13px}.template-blurb{font-size:11.5px;line-height:1.4;color:var(--muted)}
+.ov-panel{margin-top:12px}.ov-panel[hidden]{display:none}
+.ov-cluster{margin:0 0 18px;padding:12px 14px 4px;border:1px solid var(--line);border-radius:var(--radius-lg);background:var(--panel)}
+.ov-cluster h4{margin:0 0 10px;font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.nudge{margin:0 0 14px}
+.nudge-head{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:2px}
+.nudge-name{font-size:13px;font-weight:600}
+.nudge-head output{min-width:34px;text-align:right;font-variant-numeric:tabular-nums;font-size:12px;color:var(--muted)}
+.nudge-body{display:flex;align-items:center;gap:8px}
+.nudge-ends{display:flex;justify-content:space-between;margin:2px 36px 0;font-size:11px;color:var(--faint)}
+.accent-pick .nudge-body{gap:12px}
+.accent-pick input[type=color]{width:44px;height:30px;padding:2px;border:1px solid var(--line-strong);border-radius:var(--radius);background:var(--panel);cursor:pointer}
+.ov-part{margin-bottom:8px;border:1px solid var(--line);border-radius:var(--radius-lg);background:var(--panel)}
+.ov-part>summary{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px 14px;cursor:pointer;list-style:none}
+.ov-part>summary::-webkit-details-marker{display:none}
+.ov-part-name{font-size:13px;font-weight:600}
+.ov-part[open]>summary{border-bottom:1px solid var(--line);margin-bottom:12px}
+.ov-part>.field-help,.ov-part>.nudge{margin-left:14px;margin-right:14px}
+.ov-part>.field-help{margin-bottom:12px}
+.ov-part>*:last-child{margin-bottom:14px}
+.ov-advanced{margin-top:6px}.ov-advanced summary{cursor:pointer;font-size:12px;color:var(--muted);padding:6px 0}
+
+/* ---- The dial: - | wheel of bold lines | +, one segmented control, boundless ---- */
+.nudge-head{align-items:center}
+.nudge-head output{min-width:44px;padding:1px 8px;text-align:center;font-variant-numeric:tabular-nums;font-size:11.5px;font-weight:600;color:var(--faint);background:var(--soft);border-radius:999px;transition:color .12s,background .12s}
+.nudge-head output.live{color:var(--accent-strong);background:var(--accent-soft)}
+.dial{display:flex;align-items:stretch;max-width:340px;height:30px;overflow:hidden;background:var(--panel);border:1px solid var(--line-strong);border-radius:8px;box-shadow:0 1px 0 #14181d0a;transition:border-color .12s,box-shadow .12s}
+.dial:hover{border-color:#b3bcc6}
+.dial:focus-within,.dial:has(.wheel.active){border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-soft)}
+.wheel-end{flex:none;width:32px;padding:0;font:inherit;font-size:16px;line-height:1;color:var(--muted);background:var(--soft);border:0;cursor:pointer;transition:background .1s,color .1s}
+.wheel-end.minus{border-right:1px solid var(--line)}.wheel-end.plus{border-left:1px solid var(--line)}
+.wheel-end:hover{color:var(--accent-strong);background:var(--accent-soft)}
+.wheel-end:active{background:var(--accent-line)}
+.wheel-end:focus-visible{outline:2px solid var(--focus);outline-offset:-2px}
+.wheel{position:relative;flex:1;min-width:0;color:var(--ink);cursor:grab;touch-action:none;user-select:none;-webkit-user-select:none;outline:none}
+.wheel.active{cursor:grabbing}
+.wheel-body{position:absolute;left:6px;right:6px;top:2px;bottom:2px;overflow:hidden}
+.wheel-body svg{display:block;width:100%;height:100%}
+.wheel-body .major{fill:currentColor}.wheel-body .minor{fill:var(--faint)}
+.wheel:hover .wheel-body .minor{fill:var(--muted)}
+.wheel.active .wheel-body .major{fill:var(--accent)}.wheel.active .wheel-body .minor{fill:var(--accent-line)}
+.wheel-notch{position:absolute;left:50%;width:0;height:0;margin-left:-4px;border:4px solid transparent;pointer-events:none}
+.wheel-notch.top{top:0;border-top:5px solid var(--accent);border-bottom:0}
+.wheel-notch.bottom{bottom:0;border-bottom:5px solid var(--accent);border-top:0}
+.nudge-ends{max-width:340px;margin:3px 0 0;padding:0 2px}
+.accent-pick .nudge-body{max-width:340px}
+
+/* A readout that appears only while a wheel is in use, and a slider for values that have a range. */
+.nudge-head{min-height:22px}
+.nudge-head output:empty{display:none}
+.slide-body{max-width:340px}
+.slide-body input[type=range]{display:block;width:100%;height:22px;--fill:0%}
+.slide-body input[type=range]::-webkit-slider-runnable-track{height:4px;border-radius:2px;background:linear-gradient(90deg,var(--accent) var(--fill),var(--line-strong) var(--fill))}
+.slide-body input[type=range]::-moz-range-track{height:4px;border-radius:2px;background:linear-gradient(90deg,var(--accent) var(--fill),var(--line-strong) var(--fill))}
+.slide .nudge-head output{color:var(--muted)}.slide .nudge-head output.live{color:var(--accent-strong)}
+.slide .nudge-ends{max-width:340px;margin:2px 0 0}
+
+/* Sweeping controls at the top of an editing tab. */
+.ov-sweepbox{margin:0 0 22px;padding:0 14px 6px;border:1px solid var(--accent-line);border-radius:var(--radius-lg);background:var(--panel)}
+.ov-sweepbox>summary{display:flex;align-items:baseline;justify-content:space-between;gap:10px;padding:12px 0;font-size:13px;font-weight:600;cursor:pointer;list-style:none}
+.ov-sweepbox>summary::-webkit-details-marker{display:none}
+.ov-sweepbox>summary::before{content:"";width:6px;height:6px;margin-right:2px;border:solid var(--muted);border-width:0 1.5px 1.5px 0;transform:rotate(-45deg);transition:transform .12s;flex:none;align-self:center}
+.ov-sweepbox[open]>summary::before{transform:rotate(45deg)}
+.ov-sweepbox>summary span:first-child{flex:1;margin-left:6px}
+.ov-hint{font-size:11px;font-weight:400;color:var(--faint)}
+.ov-sweepbox>.field-help{margin-bottom:12px}
+.ov-sweepbox .ov-cluster{border:0;padding:0;margin:0 0 12px;background:transparent}
+.ov-sweepbox .ov-cluster h4{margin-top:4px}
+.ov-subhead{margin:6px 0 8px;font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.ov-sweepbox .ov-part{background:var(--soft)}

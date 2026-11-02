@@ -7,7 +7,7 @@
   "license": "MIT OR Apache-2.0",
   "engines": { "node": ">=20" },
   "scripts": {
-    "test": "node tests/onyx-roundtrip.mjs",
+    "test": "node tests/onyx-roundtrip.mjs && node tests/sweeps.mjs",
     "test:onyx": "node tests/onyx-roundtrip.mjs",
     "package": "node scripts/package-site.mjs"
   }
